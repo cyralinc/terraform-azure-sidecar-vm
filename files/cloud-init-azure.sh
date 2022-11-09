@@ -123,4 +123,11 @@ echo "Initializing environment variables..."
 # CYRAL_CERTIFICATE_MANAGER_SELFSIGNED_SECRET_TYPE=aws
 # EOF
 
+az login --identity
 
+SIDECAR_CLIENT_ID=$(az keyvault secret show --vault-name cyral-sidecar-key --name cyral-sidecars-2GSU5allmcQUGR76xd4LB2nRGTm-self-signed-certificate --query value -o tsv | jq -r .clientId)
+
+SIDECAR_CLIENT_SECRET=$(az keyvault secret show --vault-name cyral-sidecar-key --name cyral-sidecars-2GSU5allmcQUGR76xd4LB2nRGTm-self-signed-certificate --query value -o tsv | jq -r .clientSecret)
+
+#echo $SIDECAR_CLIENT_ID
+#echo $SIDECAR_CLIENT_SECRET

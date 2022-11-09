@@ -117,6 +117,18 @@ resource "azurerm_subnet_network_security_group_association" "ngassociation" {
   network_security_group_id = azurerm_network_security_group.nsg.id
 }
 
+resource "azurerm_user_assigned_identity" "cyral_assigned_identity" {
+  location            = azurerm_resource_group.cyral_sidecar.location
+  name                = "${local.name_prefix}-assigned_identity"
+  resource_group_name = azurerm_resource_group.cyral_sidecar.name
+}
+
+resource "azurerm_role_assignment" "example" {
+  scope                = azurerm_linux_virtual_machine_scale_set.cyral-sidecar-asg.id
+  role_definition_name = "Owner"
+  principal_id         = azurerm_user_assigned_identity.cyral_assigned_identity.principal_id
+}
+
 resource "azurerm_linux_virtual_machine_scale_set" "cyral-sidecar-asg" {
   name                = "${local.name_prefix}-machine-scale-set"
   resource_group_name = azurerm_resource_group.cyral_sidecar.name
@@ -157,7 +169,12 @@ resource "azurerm_linux_virtual_machine_scale_set" "cyral-sidecar-asg" {
       primary   = true
       subnet_id = azurerm_subnet.internal-subnet.id
       load_balancer_backend_address_pool_ids = [azurerm_lb_backend_address_pool.bpepool.id]
-    }
+    }    
+  }
+
+  identity {
+    type = "UserAssigned"
+    identity_ids = [azurerm_user_assigned_identity.cyral_assigned_identity.id]
   }
 
   depends_on = [
@@ -228,7 +245,6 @@ resource "azurerm_monitor_autoscale_setting" "monitor-autoscale-setting" {
     }
   }
 }
-
 
 # resource "azurerm_storage_account" "appstore" {
 #   name = "appstore123"

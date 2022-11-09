@@ -37,6 +37,26 @@ resource "azurerm_key_vault" "cyral-sidecar-secret" {
       "Recover",
     ]
   }
+
+  access_policy {
+    tenant_id = azurerm_user_assigned_identity.cyral_assigned_identity.tenant_id
+    object_id = azurerm_user_assigned_identity.cyral_assigned_identity.principal_id
+
+    key_permissions = [
+      "Create",
+      "Get",
+      "List",
+    ]
+
+    secret_permissions = [
+      "Set",
+      "Get",
+      "Delete",
+      "Purge",
+      "List",
+      "Recover",
+    ]
+  }
 }
 
 resource "azurerm_key_vault_secret" "cyral-sidecar-secret-version" {
