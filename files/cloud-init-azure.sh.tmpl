@@ -1,4 +1,3 @@
-#!/bin/sh
 curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg
 
 echo \
@@ -80,54 +79,45 @@ curl -sL https://aka.ms/InstallAzureCLIDeb | sudo bash
 
 echo "Initializing environment variables..."
 
-# cat > /home/ec2-user/.env << EOF
-# SIDECAR_ID=${sidecar_id}
-# CONTROLPLANE_HOST=${controlplane_host}
-# CONTAINER_REGISTRY=${container_registry}
-# SECRETS_LOCATION=${secrets_location}
-# ELK_ADDRESS=${elk_address}
-# ELK_USERNAME=${elk_username}
-# ELK_PASSWORD=${elk_password}
-# SIDECAR_ENDPOINT=${sidecar_endpoint}
-# AWS_REGION=${aws_region}
-# INSTANCE_ID=$INSTANCE_ID
-# DD_API_KEY=${dd_api_key}
-# LOG_GROUP_NAME=${log_group_name}
-
-# LOG_INTEGRATION=${log_integration}
-# METRICS_INTEGRATION=${metrics_integration}
-
-# NGINX_RESOLVER=$NGINX_RESOLVER
-# SSO_LOGIN_URL=${idp_sso_login_url}
-# IDP_CERTIFICATE=${idp_certificate}
-
-# SPLUNK_INDEX=${splunk_index}
-# SPLUNK_HOST=${splunk_host}
-# SPLUNK_PORT=${splunk_port}
-# SPLUNK_TLS=${splunk_tls}
-# SPLUNK_TOKEN=${splunk_token}
-
-# SUMOLOGIC_HOST=${sumologic_host}
-# SUMOLOGIC_URI=${sumologic_uri}
-
-# HCVAULT_INTEGRATION_ID=${hc_vault_integration_id}
-
-# MONGODB_PORT_ALLOC_RANGE_LOW=${mongodb_port_alloc_range_low}
-# MONGODB_PORT_ALLOC_RANGE_HIGH=${mongodb_port_alloc_range_high}
-
-# MYSQL_MULTIPLEXED_PORT=${mysql_multiplexed_port}
-
-# LOAD_BALANCER_TLS_PORTS=${load_balancer_tls_ports}
-
-# CYRAL_CERTIFICATE_MANAGER_SELFSIGNED_SECRET_ID=${sidecar_created_certificate_secret_id}
-# CYRAL_CERTIFICATE_MANAGER_SELFSIGNED_SECRET_TYPE=aws
-# EOF
+cat > /home/adminuser/.env << EOF
+SIDECAR_ID=${sidecar_id}
+CONTROLPLANE_HOST=${controlplane_host}
+CONTAINER_REGISTRY=${container_registry}
+LOG_INTEGRATION=${log_integration}
+METRICS_INTEGRATION=${metrics_integration}
+HCVAULT_INTEGRATION_ID=${hc_vault_integration_id}
+EOF
 
 az login --identity
 
 SIDECAR_CLIENT_ID=$(az keyvault secret show --vault-name cyral-sidecar-key --name cyral-sidecars-2GSU5allmcQUGR76xd4LB2nRGTm-self-signed-certificate --query value -o tsv | jq -r .clientId)
-
 SIDECAR_CLIENT_SECRET=$(az keyvault secret show --vault-name cyral-sidecar-key --name cyral-sidecars-2GSU5allmcQUGR76xd4LB2nRGTm-self-signed-certificate --query value -o tsv | jq -r .clientSecret)
 
-#echo $SIDECAR_CLIENT_ID
-#echo $SIDECAR_CLIENT_SECRET
+# echo "Downloading sidecar.compose.yaml..."
+# function get_token () {
+#   local url_token="${protocol}://${controlplane_host}:$1/v1/users/oidc/token"
+#   token=$(${curl} --fail --no-progress-meter --request POST "$url_token" -d grant_type=client_credentials -d client_id="$${SIDECAR_CLIENT_ID}" -d client_secret="$${SIDECAR_CLIENT_SECRET}" 2>&1)
+#   token_error=$(echo $?)
+# }
+
+# function download_sidecar () {
+#   # Test default (443) and then 8000
+#   get_token "443"
+#   if [[ $token_error -ne 0 ]]; then
+#     get_token "8000"
+#     if [[ $token_error -ne 0 ]]; then
+#       return 1
+#     fi
+#   fi
+#   local access_token=$(echo "$token" | jq -r .access_token)
+#   local url="${protocol}://${controlplane_host}/deploy/docker-compose?TemplateVersion=${sidecar_version}&TemplateType=terraform&LogIntegration=${log_integration}&MetricsIntegration=${metrics_integration}&HCVaultIntegrationID=${hc_vault_integration_id}&WiresEnabled=${repositories_supported}"
+#   echo "Trying to download the sidecar template from: $url"
+#   if [[ $(${curl} -s -o /home/ec2-user/sidecar.compose.yaml -w "%%{http_code}" -L "$url" -H "Authorization: Bearer $access_token") = 200 ]]; then
+#     return 0
+#   fi
+#   return 1
+# }
+# retry download_sidecar
+
+unset SIDECAR_CLIENT_ID
+unset SIDECAR_CLIENT_SECRET
