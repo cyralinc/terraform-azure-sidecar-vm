@@ -156,7 +156,7 @@ resource "azurerm_linux_virtual_machine_scale_set" "cyral-sidecar-asg" {
   #custom_data = filebase64("${path.module}/files/cloud-init-azure.sh")
 
   custom_data = base64encode(<<-EOT
-  #!/bin/sh  
+  #!/bin/bash -xe
   ${local.cloud_init_sh}  
   EOT
   )
