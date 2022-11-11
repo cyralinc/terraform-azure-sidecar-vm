@@ -59,9 +59,9 @@ sudo ln -s /usr/local/bin/jq /usr/bin/jq
 export PATH=$PATH:/usr/local/bin
 jq --version
 
-# wget $GCS_API_ENDPOINT/$PUBLIC_REPO/sidecar/quickstart-linux-bastion/$BASTION_BOOTSTRAP_VERSION/bastion_bootstrap.sh -O /home/adminuser/bootstrap.sh
-# chmod a+x /home/adminuser/bootstrap.sh
-# function bootstrap () { /home/adminuser/bootstrap.sh  --tcp-forwarding true --public-gcp-repo $PUBLIC_REPO --gcs-api-endpoint $GCS_API_ENDPOINT; }
+# wget $GCS_API_ENDPOINT/$PUBLIC_REPO/sidecar/quickstart-linux-bastion/$BASTION_BOOTSTRAP_VERSION/bastion_bootstrap.sh -O /home/${username_vm}/bootstrap.sh
+# chmod a+x /home/${username_vm}/bootstrap.sh
+# function bootstrap () { /home/${username_vm}/bootstrap.sh  --tcp-forwarding true --public-gcp-repo $PUBLIC_REPO --gcs-api-endpoint $GCS_API_ENDPOINT; }
 # retry bootstrap
 # sudo service sshd restart
 
@@ -81,7 +81,7 @@ export NGINX_RESOLVER=$(cat /etc/resolv.conf | grep nameserver | awk '{print $2}
 echo "Setting NGINX_RESOLVER to '$NGINX_RESOLVER'"
 
 echo "Fetching secrets..."
-mkdir -p /home/adminuser/cyral/
+mkdir -p /home/${username_vm}/cyral/
 
 # Install Azure CLI
 curl -sL https://aka.ms/InstallAzureCLIDeb | sudo bash
@@ -98,7 +98,7 @@ curl -sL https://aka.ms/InstallAzureCLIDeb | sudo bash
 
 echo "Initializing environment variables..."
 
-cat > /home/adminuser/.env << EOF
+cat > /home/${username_vm}/.env << EOF
 SIDECAR_ID=${sidecar_id}
 CONTROLPLANE_HOST=${controlplane_host}
 CONTAINER_REGISTRY=${container_registry}
@@ -109,8 +109,8 @@ EOF
 
 az login --identity
 
-SIDECAR_CLIENT_ID=$(az keyvault secret show --vault-name cyral-sidecar-key --name cyral-sidecars-2GSU5allmcQUGR76xd4LB2nRGTm-self-signed-certificate --query value -o tsv | jq -r .clientId)
-SIDECAR_CLIENT_SECRET=$(az keyvault secret show --vault-name cyral-sidecar-key --name cyral-sidecars-2GSU5allmcQUGR76xd4LB2nRGTm-self-signed-certificate --query value -o tsv | jq -r .clientSecret)
+SIDECAR_CLIENT_ID=$(az keyvault secret show --vault-name cyral-sidecar-key --name ${secrets_location} --query value -o tsv | jq -r .clientId)
+SIDECAR_CLIENT_SECRET=$(az keyvault secret show --vault-name cyral-sidecar-key --name ${secrets_location} --query value -o tsv | jq -r .clientSecret)
 
 echo "Downloading sidecar.compose.yaml..."
 echo "protocol: ${protocol}"
@@ -139,7 +139,7 @@ function download_sidecar() {
   local access_token=$(echo "$token" | jq -r .access_token)
   local url="${protocol}://${controlplane_host}/deploy/docker-compose?TemplateVersion=${sidecar_version}&TemplateType=terraform&LogIntegration=${log_integration}&MetricsIntegration=${metrics_integration}&HCVaultIntegrationID=${hc_vault_integration_id}&WiresEnabled=${repositories_supported}"
   echo "Trying to download the sidecar template from: $url"
-  if [[ $(${curl} -s -o /home/adminuser/sidecar.compose.yaml -w "%%{http_code}" -L "$url" -H "Authorization: Bearer $access_token") = 200 ]]; then
+  if [[ $(${curl} -s -o /home/${username_vm}/sidecar.compose.yaml -w "%%{http_code}" -L "$url" -H "Authorization: Bearer $access_token") = 200 ]]; then
     return 0
   fi
   return 1
@@ -152,4 +152,9 @@ retry download_sidecar
 
 unset SIDECAR_CLIENT_ID
 unset SIDECAR_CLIENT_SECRET
+
+function launch () { cd /home/${username_vm} && docker-compose -f sidecar.compose.yaml up -d; }
+# retry login
+retry launch
+
 

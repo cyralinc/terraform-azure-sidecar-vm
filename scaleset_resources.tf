@@ -143,8 +143,8 @@ resource "azurerm_linux_virtual_machine_scale_set" "cyral-sidecar-asg" {
   sku                 = "Standard_F2"
   instances           = 1
   #TODO temporary username and password
-  admin_username = "adminuser"
-  admin_password = ""
+  admin_username = var.username_vm
+  admin_password = var.password_vm
 
   disable_password_authentication = false
 
