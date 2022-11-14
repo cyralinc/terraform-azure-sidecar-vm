@@ -51,6 +51,10 @@ EOF
 #EOF
 sudo systemctl restart docker
 
+# Add ec2-user to docker group
+sudo usermod -a -G docker ${username_vm}
+newgrp docker
+
 # Install JQ
 wget -q $GCS_API_ENDPOINT/$PUBLIC_REPO/sidecar/jq/$JQ_VERSION/jq-linux64
 sudo mv jq-linux64 /usr/local/bin/jq
@@ -105,12 +109,14 @@ CONTAINER_REGISTRY=${container_registry}
 LOG_INTEGRATION=${log_integration}
 METRICS_INTEGRATION=${metrics_integration}
 HCVAULT_INTEGRATION_ID=${hc_vault_integration_id}
+SECRETS_LOCATION=${secrets_location}
+
 EOF
 
 az login --identity
 
-SIDECAR_CLIENT_ID=$(az keyvault secret show --vault-name cyral-sidecar-key --name ${secrets_location} --query value -o tsv | jq -r .clientId)
-SIDECAR_CLIENT_SECRET=$(az keyvault secret show --vault-name cyral-sidecar-key --name ${secrets_location} --query value -o tsv | jq -r .clientSecret)
+export SIDECAR_CLIENT_ID=$(az keyvault secret show --vault-name cyral-sidecar-key --name ${secrets_location} --query value -o tsv | jq -r .clientId)
+export SIDECAR_CLIENT_SECRET=$(az keyvault secret show --vault-name cyral-sidecar-key --name ${secrets_location} --query value -o tsv | jq -r .clientSecret)
 
 echo "Downloading sidecar.compose.yaml..."
 echo "protocol: ${protocol}"
@@ -147,14 +153,28 @@ function download_sidecar() {
 
 declare -f get_token
 declare -f download_sidecar
-
 retry download_sidecar
 
-unset SIDECAR_CLIENT_ID
-unset SIDECAR_CLIENT_SECRET
+#unset SIDECAR_CLIENT_ID
+#unset SIDECAR_CLIENT_SECRET
 
-function launch () { cd /home/${username_vm} && docker-compose -f sidecar.compose.yaml up -d; }
-# retry login
+az keyvault secret show --vault-name cyral-sidecar-key --name ${secrets_location} --query value -o tsv | jq -r .containerRegistryKey | base64 --decode > /home/${username_vm}/cyral/container_registry_key.json
+until [ -f /home/${username_vm}/cyral/container_registry_key.json ]; do echo "wait"; sleep 1; done
+
+function login () {
+  if [[ ${container_registry} == *".amazonaws.com"* ]]; then
+    echo "(login): Logging in to AWS ECR..."
+    eval $(aws ecr --no-include-email get-login  --region fff)
+  elif [ -s /home/${username_vm}/cyral/container_registry_key.json ]; then
+    echo "(login): Logging in to GCR..."
+    cat /home/${username_vm}/cyral/container_registry_key.json | docker login -u _json_key --password-stdin https://gcr.io
+  else
+    echo "(login): Won't log in automatically to any image registry. Image registry set to: gcr.io/cyral-dev"
+  fi
+}
+
+function launch () { cd /home/${username_vm} && sudo docker-compose -f sidecar.compose.yaml up -d; }
+retry login
 retry launch
 
 
