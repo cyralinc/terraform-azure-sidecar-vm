@@ -136,10 +136,10 @@ variable "sidecar_id" {
 # }
 # ##########################################################################################################
 
-# variable "sidecar_ports" {
-#   description = "List of ports allowed to connect to the sidecar. See also 'load_balancer_tls_ports'."
-#   type        = list(number)
-# }
+variable "sidecar_ports" {
+  description = "List of ports allowed to connect to the sidecar. See also 'load_balancer_tls_ports'."
+  type        = list(number)
+}
 
 variable "sidecar_version" {
   description = "Version of the sidecar"

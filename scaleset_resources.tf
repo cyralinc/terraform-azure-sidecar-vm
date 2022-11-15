@@ -66,7 +66,7 @@ resource "azurerm_lb_probe" "vmss" {
 
 resource "azurerm_lb_rule" "lbnatrule" {
   loadbalancer_id                = azurerm_lb.vmss.id
-  name                           = "http"
+  name                           = "ssh"
   protocol                       = "Tcp"
   frontend_port                  = 22
   backend_port                   = 22
@@ -75,18 +75,27 @@ resource "azurerm_lb_rule" "lbnatrule" {
   backend_address_pool_ids       = [azurerm_lb_backend_address_pool.bpepool.id]
 }
 
-# resource "azurerm_network_interface" "nic" {
-#   name = "cyral-nic"
-#   location = azurerm_resource_group.cyral_sidecar.location
-#   resource_group_name = azurerm_resource_group.cyral_sidecar.name
-#   ip_configuration {
-#     name = "cyral-ip-public"
-#     subnet_id = azurerm_subnet.internal-subnet.id
-#     private_ip_address_allocation = "Dynamic"
-#     public_ip_address_id = azurerm_public_ip.public-ip.id
-#   }
+resource "azurerm_lb_rule" "lbnatruleport1" {
+  loadbalancer_id                = azurerm_lb.vmss.id
+  name                           = "port1"
+  protocol                       = "Tcp"
+  frontend_port                  = 3306
+  backend_port                   = 3306
+  frontend_ip_configuration_name = "PublicIPAddress"
+  probe_id                       = azurerm_lb_probe.vmss.id
+  backend_address_pool_ids       = [azurerm_lb_backend_address_pool.bpepool.id]
+}
 
-# }
+resource "azurerm_lb_rule" "lbnatruleport2" {
+  loadbalancer_id                = azurerm_lb.vmss.id
+  name                           = "port2"
+  protocol                       = "Tcp"
+  frontend_port                  = 5432
+  backend_port                   = 5432
+  frontend_ip_configuration_name = "PublicIPAddress"
+  probe_id                       = azurerm_lb_probe.vmss.id
+  backend_address_pool_ids       = [azurerm_lb_backend_address_pool.bpepool.id]
+}
 
 resource "azurerm_network_security_group" "nsg" {
   name                = "cyral-nsg"
@@ -101,6 +110,8 @@ variable "input_rules" {
     102 = 443
     103 = 3389
     104 = 22
+    105 = 3306
+    106 = 5432
   }
 }
 
@@ -258,51 +269,3 @@ resource "azurerm_monitor_autoscale_setting" "monitor-autoscale-setting" {
     }
   }
 }
-
-# resource "azurerm_storage_account" "appstore" {
-#   name = "appstore123"
-#   resource_group_name = azurerm_resource_group.cyral_sidecar.name
-#   location = azurerm_resource_group.cyral_sidecar.location
-#   account_tier = "Standard"
-#   account_replication_type = "LRS"
-#   #allow_blob_public_access = true
-# }
-
-# resource "azurerm_storage_container" "data" {
-#   name = "data"
-#   storage_account_name = "appstore123"
-#   container_access_type = "blob"
-#   depends_on = [
-#     azurerm_storage_account.appstore
-#   ]
-# }
-
-# resource "azurerm_storage_blob" "init-shell" {
-#   name = "cloud-init-azure-post.sh.tmpl"
-#   storage_account_name = "appstore123"
-#   storage_container_name = "data"
-#   type = "Block"
-#   source = "cloud-init-azure-post.sh.tmpl"
-#   depends_on = [
-#     azurerm_storage_container.data
-#   ]
-# }
-
-# resource "azurerm_virtual_machine_scale_set_extension" "example" {
-#   name                         = "example"
-#   virtual_machine_scale_set_id = azurerm_linux_virtual_machine_scale_set.cyral-sidecar-asg.id
-#   publisher                    = "Microsoft.Azure.Extensions"
-#   type                         = "CustomScript"
-#   type_handler_version         = "2.0"
-
-#   # settings = <<SETTINGS
-#   # {
-#   #   "fileUris": ["https://${azurerm_storage_account.appstore.name}"]
-#   # }
-#   # SETTINGS
-
-#   settings = jsonencode({
-#     "commandToExecute" = "sudo mkdir -p /etc/apt/testeCleber"
-#   })
-
-# }

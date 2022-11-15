@@ -63,15 +63,6 @@ sudo ln -s /usr/local/bin/jq /usr/bin/jq
 export PATH=$PATH:/usr/local/bin
 jq --version
 
-# wget $GCS_API_ENDPOINT/$PUBLIC_REPO/sidecar/quickstart-linux-bastion/$BASTION_BOOTSTRAP_VERSION/bastion_bootstrap.sh -O /home/${username_vm}/bootstrap.sh
-# chmod a+x /home/${username_vm}/bootstrap.sh
-# function bootstrap () { /home/${username_vm}/bootstrap.sh  --tcp-forwarding true --public-gcp-repo $PUBLIC_REPO --gcs-api-endpoint $GCS_API_ENDPOINT; }
-# retry bootstrap
-# sudo service sshd restart
-
-# Configure cloudwatch
-# TODO define logs
-
 # echo "Fetching public hostname..."
 export STATUS_CODE=$(curl -o instance-id.txt -w "%%{http_code}\n" -s http://169.254.169.254/latest/meta-data/instance-id -m 10)
 if [ $STATUS_CODE -eq 200 ]; then
@@ -89,19 +80,8 @@ mkdir -p /home/${username_vm}/cyral/
 
 # Install Azure CLI
 curl -sL https://aka.ms/InstallAzureCLIDeb | sudo bash
-# sudo apt-get install ca-certificates curl apt-transport-https lsb-release gnupg -y
-# curl -sL https://packages.microsoft.com/keys/microsoft.asc |
-#     gpg --dearmor |
-#     sudo tee /etc/apt/trusted.gpg.d/microsoft.gpg > /dev/null
-# AZ_REPO=$(lsb_release -cs)
-# echo "deb [arch=amd64] https://packages.microsoft.com/repos/azure-cli/ $AZ_REPO main" |
-#     sudo tee /etc/apt/sources.list.d/azure-cli.list
-# sudo apt-get update -y
-# sudo apt-get install azure-cli -y
-
 
 echo "Initializing environment variables..."
-
 cat > /home/${username_vm}/.env << EOF
 SIDECAR_ID=${sidecar_id}
 CONTROLPLANE_HOST=${controlplane_host}
@@ -110,7 +90,6 @@ LOG_INTEGRATION=${log_integration}
 METRICS_INTEGRATION=${metrics_integration}
 HCVAULT_INTEGRATION_ID=${hc_vault_integration_id}
 SECRETS_LOCATION=${secrets_location}
-
 EOF
 
 az login --identity
