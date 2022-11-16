@@ -17,16 +17,12 @@ variable "client_id" {
 variable "client_secret" {
   description = "The client secret assigned to the sidecar"
   type        = string
-  # Only compatible with Terraform >=0.14
-  #sensitive   = true
 }
 
 variable "container_registry_key" {
   description = "Key provided by Cyral for authenticating on Cyral's container registry"
   type        = string
   default     = ""
-  # Only compatible with Terraform >=0.14
-  #sensitive   = true
 }
 
 variable "control_plane" {
@@ -82,11 +78,11 @@ EOF
   default     = 27019
 }
 
-# variable "mysql_multiplexed_port" {
-#   description = "Port that will be used by the sidecar to multiplex connections to MySQL"
-#   type        = number
-#   default     = 0
-# }
+variable "mysql_multiplexed_port" {
+  description = "Port that will be used by the sidecar to multiplex connections to MySQL"
+  type        = number
+  default     = 0
+}
 
 variable "name_prefix" {
   description = "Prefix for names of created resources in AWS. Maximum length is 24 characters."

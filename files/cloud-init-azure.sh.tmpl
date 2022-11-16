@@ -81,6 +81,10 @@ mkdir -p /home/${username_vm}/cyral/
 # Install Azure CLI
 curl -sL https://aka.ms/InstallAzureCLIDeb | sudo bash
 
+az login --identity
+export SIDECAR_CLIENT_ID=$(az keyvault secret show --vault-name cyral-sidecar-key --name ${secrets_location} --query value -o tsv | jq -r .clientId)
+export SIDECAR_CLIENT_SECRET=$(az keyvault secret show --vault-name cyral-sidecar-key --name ${secrets_location} --query value -o tsv | jq -r .clientSecret)
+
 echo "Initializing environment variables..."
 cat > /home/${username_vm}/.env << EOF
 SIDECAR_ID=${sidecar_id}
@@ -90,12 +94,14 @@ LOG_INTEGRATION=${log_integration}
 METRICS_INTEGRATION=${metrics_integration}
 HCVAULT_INTEGRATION_ID=${hc_vault_integration_id}
 SECRETS_LOCATION=${secrets_location}
+INSTANCE_ID=$INSTANCE_ID
+SIDECAR_CLIENT_ID=$SIDECAR_CLIENT_ID
+SIDECAR_CLIENT_SECRET=$SIDECAR_CLIENT_SECRET
+SIDECAR_ENDPOINT=${sidecar_endpoint}
+MONGODB_PORT_ALLOC_RANGE_LOW=${mongodb_port_alloc_range_low}
+MONGODB_PORT_ALLOC_RANGE_HIGH=${mongodb_port_alloc_range_high}
+MYSQL_MULTIPLEXED_PORT=${mysql_multiplexed_port}
 EOF
-
-az login --identity
-
-export SIDECAR_CLIENT_ID=$(az keyvault secret show --vault-name cyral-sidecar-key --name ${secrets_location} --query value -o tsv | jq -r .clientId)
-export SIDECAR_CLIENT_SECRET=$(az keyvault secret show --vault-name cyral-sidecar-key --name ${secrets_location} --query value -o tsv | jq -r .clientSecret)
 
 echo "Downloading sidecar.compose.yaml..."
 echo "protocol: ${protocol}"

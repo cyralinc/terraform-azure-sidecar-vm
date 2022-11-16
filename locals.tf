@@ -4,6 +4,7 @@ locals {
   #     ) : (
   #     length(aws_route53_record.cyral-sidecar-dns-record) == 1 ? aws_route53_record.cyral-sidecar-dns-record[0].fqdn : aws_lb.cyral-lb.dns_name
   #   )
+  sidecar_endpoint = azurerm_public_ip.public-ip.ip_address
 
   protocol    = var.external_tls_type == "no-tls" ? "http" : "https"
   curl        = var.external_tls_type == "tls-skip-verify" ? "curl -k" : "curl"
@@ -26,7 +27,7 @@ locals {
     # elk_address                           = var.elk_address
     # elk_username                          = var.elk_username
     # elk_password                          = var.elk_password
-    # sidecar_endpoint                      = local.sidecar_endpoint
+    sidecar_endpoint = local.sidecar_endpoint
     # dd_api_key                            = var.dd_api_key
     # aws_region                            = data.aws_region.current.name
     # log_group_name = aws_cloudwatch_log_group.cyral-sidecar-lg.name
@@ -41,14 +42,13 @@ locals {
     # idp_certificate                       = var.idp_certificate
     mongodb_port_alloc_range_low  = var.mongodb_port_alloc_range_low
     mongodb_port_alloc_range_high = var.mongodb_port_alloc_range_high
-    # mysql_multiplexed_port                = var.mysql_multiplexed_port
+    mysql_multiplexed_port        = var.mysql_multiplexed_port
     # sidecar_created_certificate_secret_id = aws_secretsmanager_secret.sidecar_created_certificate.arn
     load_balancer_tls_ports = join(",", var.load_balancer_tls_ports)
 
     username_vm = var.username_vm
     password_vm = var.password_vm
   }
-
 
   cloud_init_sh = templatefile("${path.module}/files/cloud-init-azure.sh.tmpl", local.templatevars)
 }
