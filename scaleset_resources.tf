@@ -67,7 +67,7 @@ resource "azurerm_lb_probe" "vmss" {
 
 resource "azurerm_lb_rule" "lbnatrule" {
   loadbalancer_id                = azurerm_lb.vmss.id
-  name                           = "ssh"
+  name                           = "SSH"
   protocol                       = "Tcp"
   frontend_port                  = 22
   backend_port                   = 22
@@ -76,26 +76,16 @@ resource "azurerm_lb_rule" "lbnatrule" {
   backend_address_pool_ids       = [azurerm_lb_backend_address_pool.bpepool.id]
 }
 
-resource "azurerm_lb_rule" "lbnatruleport1" {
+resource "azurerm_lb_rule" "lbnatrule-port-db" {
   loadbalancer_id                = azurerm_lb.vmss.id
-  name                           = "port1"
+  name                           = "${local.name_prefix}-tg${element(var.sidecar_ports, count.index)}"
   protocol                       = "Tcp"
-  frontend_port                  = 3306
-  backend_port                   = 3306
+  frontend_port                  = "${element(var.sidecar_ports, count.index)}"
+  backend_port                   = "${element(var.sidecar_ports, count.index)}"
   frontend_ip_configuration_name = "PublicIPAddress"
   probe_id                       = azurerm_lb_probe.vmss.id
   backend_address_pool_ids       = [azurerm_lb_backend_address_pool.bpepool.id]
-}
-
-resource "azurerm_lb_rule" "lbnatruleport2" {
-  loadbalancer_id                = azurerm_lb.vmss.id
-  name                           = "port2"
-  protocol                       = "Tcp"
-  frontend_port                  = 5432
-  backend_port                   = 5432
-  frontend_ip_configuration_name = "PublicIPAddress"
-  probe_id                       = azurerm_lb_probe.vmss.id
-  backend_address_pool_ids       = [azurerm_lb_backend_address_pool.bpepool.id]
+  count                          = "${length(var.sidecar_ports)}"
 }
 
 resource "azurerm_network_security_group" "nsg" {
@@ -107,12 +97,8 @@ resource "azurerm_network_security_group" "nsg" {
 variable "input_rules" {
   type = map(any)
   default = {
-    101 = 80
-    102 = 443
-    103 = 3389
-    104 = 22
-    105 = 3306
-    106 = 5432
+    101 = 22
+    102 = 5432
   }
 }
 
@@ -142,7 +128,7 @@ resource "azurerm_user_assigned_identity" "cyral_assigned_identity" {
   resource_group_name = azurerm_resource_group.cyral_sidecar.name
 }
 
-resource "azurerm_role_assignment" "example" {
+resource "azurerm_role_assignment" "role_assignment" {
   scope                = azurerm_linux_virtual_machine_scale_set.cyral-sidecar-asg.id
   role_definition_name = "Owner"
   principal_id         = azurerm_user_assigned_identity.cyral_assigned_identity.principal_id
