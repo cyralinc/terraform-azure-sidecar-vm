@@ -28,6 +28,7 @@ resource "azurerm_public_ip" "public-ip" {
   location            = azurerm_resource_group.cyral_sidecar.location
   resource_group_name = azurerm_resource_group.cyral_sidecar.name
   allocation_method   = "Static"
+  domain_name_label = "${local.name_prefix}"
   # idle_timeout_in_minutes = 30
   sku = "Standard"
 }
