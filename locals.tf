@@ -1,9 +1,4 @@
 locals {
-  #   sidecar_endpoint = (length(aws_route53_record.cyral-sidecar-dns-record) == 0 && length(var.sidecar_dns_name) > 0) ? (
-  #     var.sidecar_dns_name
-  #     ) : (
-  #     length(aws_route53_record.cyral-sidecar-dns-record) == 1 ? aws_route53_record.cyral-sidecar-dns-record[0].fqdn : aws_lb.cyral-lb.dns_name
-  #   )
   sidecar_endpoint = azurerm_public_ip.public-ip.fqdn
 
   protocol    = var.external_tls_type == "no-tls" ? "http" : "https"

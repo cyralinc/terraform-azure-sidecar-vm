@@ -94,27 +94,41 @@ resource "azurerm_network_security_group" "nsg" {
   resource_group_name = azurerm_resource_group.cyral_sidecar.name
 }
 
-variable "input_rules" {
-  type = map(any)
-  default = {
-    101 = 22
-    102 = 5432
-  }
-}
+# variable "input_rules" {
+#   type = map(any)
+#   default = {
+#     101 = 22
+#     102 = 5432
+#   }
+# }
 
-resource "azurerm_network_security_rule" "security_rule" {
-  for_each                    = var.input_rules
+resource "azurerm_network_security_rule" "security_rule_ssh" {  
   resource_group_name         = azurerm_resource_group.cyral_sidecar.name
-  name                        = "port_in_${each.value}"
-  priority                    = each.key
+  name                        = "${local.name_prefix}-tg22"
+  priority                    = 101
   direction                   = "Inbound"
   access                      = "Allow"
   source_port_range           = "*"
   protocol                    = "Tcp"
-  destination_port_range      = each.value
+  destination_port_range      = 22
+  source_address_prefix       = "*"
+  destination_address_prefix  = "*"
+  network_security_group_name = azurerm_network_security_group.nsg.name  
+}
+
+resource "azurerm_network_security_rule" "security_rule" {  
+  resource_group_name         = azurerm_resource_group.cyral_sidecar.name
+  name                        = "${local.name_prefix}-tg${element(var.sidecar_ports, count.index)}"
+  priority                    = 102 + count.index
+  direction                   = "Inbound"
+  access                      = "Allow"
+  source_port_range           = "*"
+  protocol                    = "Tcp"
+  destination_port_range      = "${element(var.sidecar_ports, count.index)}"
   source_address_prefix       = "*"
   destination_address_prefix  = "*"
   network_security_group_name = azurerm_network_security_group.nsg.name
+  count                          = "${length(var.sidecar_ports)}"
 }
 
 resource "azurerm_subnet_network_security_group_association" "ngassociation" {
@@ -172,7 +186,7 @@ resource "azurerm_linux_virtual_machine_scale_set" "cyral-sidecar-asg" {
   }
 
   network_interface {
-    name    = "example"
+    name    = "${local.name_prefix}-network-interface"
     primary = true
 
     ip_configuration {
