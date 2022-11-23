@@ -58,37 +58,37 @@
 # #           Splunk
 # ################################
 
-# variable "splunk_index" {
-#   description = "Splunk index"
-#   type        = string
-#   default     = ""
-# }
+variable "splunk_index" {
+  description = "Splunk index"
+  type        = string
+  default     = ""
+}
 
-# variable "splunk_host" {
-#   description = "Splunk host"
-#   type        = string
-#   default     = ""
-# }
+variable "splunk_host" {
+  description = "Splunk host"
+  type        = string
+  default     = ""
+}
 
-# variable "splunk_port" {
-#   description = "Splunk port"
-#   type        = number
-#   default     = 0
-# }
+variable "splunk_port" {
+  description = "Splunk port"
+  type        = number
+  default     = 0
+}
 
-# variable "splunk_tls" {
-#   description = "Splunk TLS"
-#   type        = bool
-#   default     = false
-# }
+variable "splunk_tls" {
+  description = "Splunk TLS"
+  type        = bool
+  default     = false
+}
 
-# variable "splunk_token" {
-#   description = "Splunk token"
-#   type        = string
-#   default     = ""
-#   # Only compatible with Terraform >=0.14
-#   #sensitive   = true
-# }
+variable "splunk_token" {
+  description = "Splunk token"
+  type        = string
+  default     = ""
+  # Only compatible with Terraform >=0.14
+  #sensitive   = true
+}
 
 # ################################
 # #           Sumologic
