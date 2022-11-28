@@ -13,6 +13,7 @@ locals {
     container_registry_username = var.container_registry_username
     log_integration             = var.log_integration
     secrets_location            = var.secrets_location
+    key_vault_name              = azurerm_key_vault.cyral-sidecar-secret.name
     metrics_integration         = var.metrics_integration
     hc_vault_integration_id     = var.hc_vault_integration_id
     curl                        = local.curl

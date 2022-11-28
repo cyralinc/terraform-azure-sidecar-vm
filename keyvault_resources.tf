@@ -9,11 +9,10 @@ locals {
     depends_on = [
         azurerm_log_analytics_workspace.cyral_log_analytics_workspace
       ]  
-  #create_sidecar_custom_certificate_secret = var.sidecar_custom_certificate_account_id != ""
 }
 
 resource "azurerm_key_vault" "cyral-sidecar-secret" {
-  name                        = "cyral-sidecar-key"
+  name                        = "${local.name_prefix}-kv"
   location                    = azurerm_resource_group.cyral_sidecar.location
   resource_group_name         = azurerm_resource_group.cyral_sidecar.name
   enabled_for_disk_encryption = true

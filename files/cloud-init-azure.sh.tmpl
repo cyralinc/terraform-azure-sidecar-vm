@@ -82,10 +82,10 @@ mkdir -p /home/${username_vm}/cyral/
 curl -sL https://aka.ms/InstallAzureCLIDeb | sudo bash
 
 az login --identity
-export SIDECAR_CLIENT_ID=$(az keyvault secret show --vault-name cyral-sidecar-key --name ${secrets_location} --query value -o tsv | jq -r .clientId)
-export SIDECAR_CLIENT_SECRET=$(az keyvault secret show --vault-name cyral-sidecar-key --name ${secrets_location} --query value -o tsv | jq -r .clientSecret)
-export WORKSPACE_ID=$(az keyvault secret show --vault-name cyral-sidecar-key --name ${secrets_location} --query value -o tsv | jq -r .workspaceId)
-export PRIMARY_SHARED_KEY=$(az keyvault secret show --vault-name cyral-sidecar-key --name ${secrets_location} --query value -o tsv | jq -r .sharedPrimaryKey)
+export SIDECAR_CLIENT_ID=$(az keyvault secret show --vault-name ${key_vault_name} --name ${secrets_location} --query value -o tsv | jq -r .clientId)
+export SIDECAR_CLIENT_SECRET=$(az keyvault secret show --vault-name ${key_vault_name} --name ${secrets_location} --query value -o tsv | jq -r .clientSecret)
+export WORKSPACE_ID=$(az keyvault secret show --vault-name ${key_vault_name} --name ${secrets_location} --query value -o tsv | jq -r .workspaceId)
+export PRIMARY_SHARED_KEY=$(az keyvault secret show --vault-name ${key_vault_name} --name ${secrets_location} --query value -o tsv | jq -r .sharedPrimaryKey)
 
 echo "Initializing environment variables..."
 cat > /home/${username_vm}/.env << EOF
@@ -147,7 +147,7 @@ retry download_sidecar
 #unset SIDECAR_CLIENT_ID
 #unset SIDECAR_CLIENT_SECRET
 
-az keyvault secret show --vault-name cyral-sidecar-key --name ${secrets_location} --query value -o tsv | jq -r .containerRegistryKey | base64 --decode > /home/${username_vm}/cyral/container_registry_key.json
+az keyvault secret show --vault-name ${key_vault_name} --name ${secrets_location} --query value -o tsv | jq -r .containerRegistryKey | base64 --decode > /home/${username_vm}/cyral/container_registry_key.json
 until [ -f /home/${username_vm}/cyral/container_registry_key.json ]; do echo "wait"; sleep 1; done
 
 function login () {

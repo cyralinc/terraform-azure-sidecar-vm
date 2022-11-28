@@ -1,33 +1,33 @@
 data "azurerm_client_config" "current" {}
 
 resource "azurerm_resource_group" "cyral_sidecar" {
-  name     = "cyral_sidecar"
+  name     = "${local.name_prefix}-resource-group"
   location = "brazilsouth"
 }
 
 resource "azurerm_log_analytics_workspace" "cyral_log_analytics_workspace" {
-  name                = "${local.name_prefix}-log-workspace"
+  name                = "${local.name_prefix}log-analytics"
   location            = azurerm_resource_group.cyral_sidecar.location
   resource_group_name = azurerm_resource_group.cyral_sidecar.name
   retention_in_days   = 30
 }
 
 resource "azurerm_virtual_network" "virtual-network" {
-  name                = "cyral-virtual-network"
+  name                = "${local.name_prefix}-virtual-network"
   resource_group_name = azurerm_resource_group.cyral_sidecar.name
   location            = azurerm_resource_group.cyral_sidecar.location
   address_space       = ["10.0.0.0/16"]
 }
 
 resource "azurerm_subnet" "internal-subnet" {
-  name                 = "cyral-internal-subnet"
+  name                 = "${local.name_prefix}-subnet"
   resource_group_name  = azurerm_resource_group.cyral_sidecar.name
   virtual_network_name = azurerm_virtual_network.virtual-network.name
   address_prefixes     = ["10.0.2.0/24"]
 }
 
 resource "azurerm_public_ip" "public-ip" {
-  name                = "cyral-public-ip"
+  name                = "${local.name_prefix}-public-ip"
   location            = azurerm_resource_group.cyral_sidecar.location
   resource_group_name = azurerm_resource_group.cyral_sidecar.name
   allocation_method   = "Static"
@@ -36,7 +36,7 @@ resource "azurerm_public_ip" "public-ip" {
 }
 
 resource "azurerm_lb" "vmss" {
-  name                = "vmss-lb"
+  name                = "${local.name_prefix}-lb"
   location            = azurerm_resource_group.cyral_sidecar.location
   resource_group_name = azurerm_resource_group.cyral_sidecar.name
   sku                 = "Standard"
@@ -55,7 +55,7 @@ resource "azurerm_lb" "vmss" {
 
 resource "azurerm_lb_backend_address_pool" "bpepool" {
   loadbalancer_id = azurerm_lb.vmss.id
-  name            = "BackEndAddressPool"
+  name            = "${local.name_prefix}-lb-backend-address-pool"
   depends_on = [
     azurerm_lb.vmss
   ]
@@ -63,7 +63,7 @@ resource "azurerm_lb_backend_address_pool" "bpepool" {
 
 resource "azurerm_lb_probe" "vmss" {
   loadbalancer_id = azurerm_lb.vmss.id
-  name            = "ssh-running-probe"
+  name            = "${local.name_prefix}-lb-probe"
   port            = 22
 }
 
@@ -91,14 +91,14 @@ resource "azurerm_lb_rule" "lbnatrule-port-db" {
 }
 
 resource "azurerm_network_security_group" "nsg" {
-  name                = "cyral-nsg"
+  name                = "${local.name_prefix}-network-security-group"
   location            = azurerm_resource_group.cyral_sidecar.location
   resource_group_name = azurerm_resource_group.cyral_sidecar.name
 }
 
 resource "azurerm_network_security_rule" "security_rule_ssh" {  
   resource_group_name         = azurerm_resource_group.cyral_sidecar.name
-  name                        = "${local.name_prefix}-tg22"
+  name                        = "${local.name_prefix}-nsr-tg22"
   priority                    = 101
   direction                   = "Inbound"
   access                      = "Allow"
@@ -112,7 +112,7 @@ resource "azurerm_network_security_rule" "security_rule_ssh" {
 
 resource "azurerm_network_security_rule" "security_rule" {  
   resource_group_name         = azurerm_resource_group.cyral_sidecar.name
-  name                        = "${local.name_prefix}-tg${element(var.sidecar_ports, count.index)}"
+  name                        = "${local.name_prefix}-nsr-tg${element(var.sidecar_ports, count.index)}"
   priority                    = 102 + count.index
   direction                   = "Inbound"
   access                      = "Allow"
@@ -132,7 +132,7 @@ resource "azurerm_subnet_network_security_group_association" "ngassociation" {
 
 resource "azurerm_user_assigned_identity" "cyral_assigned_identity" {
   location            = azurerm_resource_group.cyral_sidecar.location
-  name                = "${local.name_prefix}-assigned_identity"
+  name                = "${local.name_prefix}-user-assigned_identity"
   resource_group_name = azurerm_resource_group.cyral_sidecar.name
 }
 
