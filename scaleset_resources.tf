@@ -1,12 +1,15 @@
-#locals {
-#  first_public_key = "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQC+wWK73dCr+jgQOAxNsHAnNNNMEMWOHYEccp6wJm2gotpr9katuF/ZAdou5AaW1C61slRkHRkpRRX9FA9CYBiitZgvCCz+3nWNN7l/Up54Zps/pHWGZLHNJZRYyAB6j5yVLMVHIHriY49d/GZTZVNB8GoJv9Gakwc/fuEZYYl4YDFiGMBP///TzlI4jhiJzjKnEvqPFki5p2ZRJqcbCiF4pJrxUQR/RXqVFQdbRLZgYfJ8xGB878RENq3yQ39d8dVOkq4edbkzwcUmwwwkYVPIoDGsYLaRHnG+To7FvMeyO7xDVQkMKzopTQV8AuKpyvpqu0a9pWOMaiCyDytO7GGN you@me.com"
-#}
-
 data "azurerm_client_config" "current" {}
 
 resource "azurerm_resource_group" "cyral_sidecar" {
   name     = "cyral_sidecar"
   location = "brazilsouth"
+}
+
+resource "azurerm_log_analytics_workspace" "cyral_log_analytics_workspace" {
+  name                = "${local.name_prefix}-log-workspace"
+  location            = azurerm_resource_group.cyral_sidecar.location
+  resource_group_name = azurerm_resource_group.cyral_sidecar.name
+  retention_in_days   = 30
 }
 
 resource "azurerm_virtual_network" "virtual-network" {
@@ -29,7 +32,6 @@ resource "azurerm_public_ip" "public-ip" {
   resource_group_name = azurerm_resource_group.cyral_sidecar.name
   allocation_method   = "Static"
   domain_name_label = "${local.name_prefix}"
-  # idle_timeout_in_minutes = 30
   sku = "Standard"
 }
 
@@ -94,14 +96,6 @@ resource "azurerm_network_security_group" "nsg" {
   resource_group_name = azurerm_resource_group.cyral_sidecar.name
 }
 
-# variable "input_rules" {
-#   type = map(any)
-#   default = {
-#     101 = 22
-#     102 = 5432
-#   }
-# }
-
 resource "azurerm_network_security_rule" "security_rule_ssh" {  
   resource_group_name         = azurerm_resource_group.cyral_sidecar.name
   name                        = "${local.name_prefix}-tg22"
@@ -164,8 +158,6 @@ resource "azurerm_linux_virtual_machine_scale_set" "cyral-sidecar-asg" {
   #  username   = "adminuser"
   #  public_key = local.first_public_key
   #}
-
-  #custom_data = filebase64("${path.module}/files/cloud-init-azure.sh")
 
   custom_data = base64encode(<<-EOT
   #!/bin/bash -xe

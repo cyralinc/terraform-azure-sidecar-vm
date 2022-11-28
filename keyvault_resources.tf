@@ -3,7 +3,12 @@ locals {
     clientId             = var.client_id
     clientSecret         = var.client_secret
     containerRegistryKey = var.container_registry_key
+    workspaceId          = azurerm_log_analytics_workspace.cyral_log_analytics_workspace.workspace_id
+    sharedPrimaryKey     = azurerm_log_analytics_workspace.cyral_log_analytics_workspace.primary_shared_key
   }
+    depends_on = [
+        azurerm_log_analytics_workspace.cyral_log_analytics_workspace
+      ]  
   #create_sidecar_custom_certificate_secret = var.sidecar_custom_certificate_account_id != ""
 }
 
