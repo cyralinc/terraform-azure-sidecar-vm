@@ -1,12 +1,12 @@
 data "azurerm_client_config" "current" {}
 
 resource "azurerm_resource_group" "cyral_sidecar" {
-  name     = "${local.name_prefix}-resource-group"
-  location = "brazilsouth"
+  name     =  var.resource_group_name == "" ? "${local.name_prefix}" : var.resource_group_name
+  location = var.resource_group_location
 }
 
 resource "azurerm_log_analytics_workspace" "cyral_log_analytics_workspace" {
-  name                = "${local.name_prefix}log-analytics"
+  name                = "${local.name_prefix}-log-analytics"
   location            = azurerm_resource_group.cyral_sidecar.location
   resource_group_name = azurerm_resource_group.cyral_sidecar.name
   retention_in_days   = 30

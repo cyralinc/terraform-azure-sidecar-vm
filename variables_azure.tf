@@ -8,6 +8,16 @@ variable "password_vm" {
   type        = string
 }
 
+variable "resource_group_name" {
+  description = "Azure resource group name"
+  default = ""
+}
+
+variable "resource_group_location" {
+  description = "Azure resource group location"
+}
+
+
 # variable "ami_id" {
 #   description = <<EOF
 # Amazon Linux 2 AMI ID for sidecar EC2 instances. The default behavior is to use the latest version.
