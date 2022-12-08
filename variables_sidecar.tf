@@ -51,7 +51,7 @@ variable "log_integration" {
 variable "secret_manager_type" {
   description = "Define secret manager type for sidecar_client_id and sidecar_client_secret"
   type        = string
-  default     = ""
+  default     = "azure-key-vault"
 }
 
 variable "metrics_integration" {
