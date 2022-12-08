@@ -48,6 +48,12 @@ variable "log_integration" {
   default     = "cloudwatch"
 }
 
+variable "secret_manager_type" {
+  description = "Define secret manager type for sidecar_client_id and sidecar_client_secret"
+  type        = string
+  default     = ""
+}
+
 variable "metrics_integration" {
   description = "Metrics destination"
   type        = string
