@@ -65,7 +65,7 @@ variable "splunk_token" {
   type        = string
   default     = ""
   # Only compatible with Terraform >=0.14
-  #sensitive   = true
+  sensitive   = true
 }
 
 # ################################
