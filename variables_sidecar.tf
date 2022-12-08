@@ -45,7 +45,7 @@ variable "external_tls_type" {
 variable "log_integration" {
   description = "Logs destination"
   type        = string
-  default     = "cloudwatch"
+  default     = "azure-log-analytics"
 }
 
 variable "secret_manager_type" {
