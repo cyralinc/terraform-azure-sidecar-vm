@@ -161,7 +161,9 @@ resource "azurerm_linux_virtual_machine_scale_set" "cyral-sidecar-asg" {
 
   custom_data = base64encode(<<-EOT
   #!/bin/bash -xe
-  ${local.cloud_init_sh}  
+  ${lookup(var.custom_user_data, "pre")}
+  ${local.cloud_init_sh}
+  ${lookup(var.custom_user_data, "post")}
   EOT
   )
 

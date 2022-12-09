@@ -101,12 +101,6 @@ variable "sidecar_id" {
   type        = string
 }
 
-# variable "sidecar_custom_certificate_account_id" {
-#   description = "(Optional) AWS Account ID where the custom certificate module will be deployed."
-#   type        = string
-#   default     = ""
-# }
-
 variable "sidecar_ports" {
   description = "List of ports allowed to connect to the sidecar. See also 'load_balancer_tls_ports'."
   type        = list(number)
@@ -123,8 +117,8 @@ variable "repositories_supported" {
   default     = ["denodo", "dremio", "dynamodb", "mongodb", "mysql", "oracle", "postgresql", "redshift", "snowflake", "sqlserver", "s3"]
 }
 
-# variable "custom_user_data" {
-#   description = "Ancillary consumer supplied user-data script. Bash scripts must be added to a map as a value of the key `pre` and/or `post` denoting execution order with respect to sidecar installation. (Approx Input Size = 19KB)"
-#   type        = map(any)
-#   default     = { "pre" = "", "post" = "" }
-# }
+variable "custom_user_data" {
+  description = "Ancillary consumer supplied user-data script. Bash scripts must be added to a map as a value of the key `pre` and/or `post` denoting execution order with respect to sidecar installation. (Approx Input Size = 19KB)"
+  type        = map(any)
+  default     = { "pre" = "", "post" = "" }
+}
