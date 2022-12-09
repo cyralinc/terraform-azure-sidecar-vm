@@ -26,12 +26,6 @@ resource "azurerm_key_vault" "cyral-sidecar-secret" {
     tenant_id = data.azurerm_client_config.current.tenant_id
     object_id = data.azurerm_client_config.current.object_id
 
-    key_permissions = [
-      "Create",
-      "Get",
-      "List",
-    ]
-
     secret_permissions = [
       "Set",
       "Get",
@@ -45,12 +39,6 @@ resource "azurerm_key_vault" "cyral-sidecar-secret" {
   access_policy {
     tenant_id = azurerm_user_assigned_identity.cyral_assigned_identity.tenant_id
     object_id = azurerm_user_assigned_identity.cyral_assigned_identity.principal_id
-
-    key_permissions = [
-      "Create",
-      "Get",
-      "List",
-    ]
 
     secret_permissions = [
       "Set",
