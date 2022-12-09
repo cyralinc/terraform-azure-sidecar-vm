@@ -1,7 +1,7 @@
 data "azurerm_client_config" "current" {}
 
 resource "azurerm_resource_group" "cyral_sidecar" {
-  name     =  var.resource_group_name == "" ? "${local.name_prefix}" : var.resource_group_name
+  name     = var.resource_group_name == "" ? "${local.name_prefix}" : var.resource_group_name
   location = var.resource_group_location
 }
 
@@ -31,8 +31,8 @@ resource "azurerm_public_ip" "public-ip" {
   location            = azurerm_resource_group.cyral_sidecar.location
   resource_group_name = azurerm_resource_group.cyral_sidecar.name
   allocation_method   = "Static"
-  domain_name_label = "${local.name_prefix}"
-  sku = "Standard"
+  domain_name_label   = local.name_prefix
+  sku                 = "Standard"
 }
 
 resource "azurerm_lb" "vmss" {
@@ -82,12 +82,12 @@ resource "azurerm_lb_rule" "lbnatrule-port-db" {
   loadbalancer_id                = azurerm_lb.vmss.id
   name                           = "${local.name_prefix}-tg${element(var.sidecar_ports, count.index)}"
   protocol                       = "Tcp"
-  frontend_port                  = "${element(var.sidecar_ports, count.index)}"
-  backend_port                   = "${element(var.sidecar_ports, count.index)}"
+  frontend_port                  = element(var.sidecar_ports, count.index)
+  backend_port                   = element(var.sidecar_ports, count.index)
   frontend_ip_configuration_name = "PublicIPAddress"
   probe_id                       = azurerm_lb_probe.vmss.id
   backend_address_pool_ids       = [azurerm_lb_backend_address_pool.bpepool.id]
-  count                          = "${length(var.sidecar_ports)}"
+  count                          = length(var.sidecar_ports)
 }
 
 resource "azurerm_network_security_group" "nsg" {
@@ -96,7 +96,7 @@ resource "azurerm_network_security_group" "nsg" {
   resource_group_name = azurerm_resource_group.cyral_sidecar.name
 }
 
-resource "azurerm_network_security_rule" "security_rule_ssh" {  
+resource "azurerm_network_security_rule" "security_rule_ssh" {
   resource_group_name         = azurerm_resource_group.cyral_sidecar.name
   name                        = "${local.name_prefix}-nsr-tg22"
   priority                    = 101
@@ -107,10 +107,10 @@ resource "azurerm_network_security_rule" "security_rule_ssh" {
   destination_port_range      = 22
   source_address_prefix       = "*"
   destination_address_prefix  = "*"
-  network_security_group_name = azurerm_network_security_group.nsg.name  
+  network_security_group_name = azurerm_network_security_group.nsg.name
 }
 
-resource "azurerm_network_security_rule" "security_rule" {  
+resource "azurerm_network_security_rule" "security_rule" {
   resource_group_name         = azurerm_resource_group.cyral_sidecar.name
   name                        = "${local.name_prefix}-nsr-tg${element(var.sidecar_ports, count.index)}"
   priority                    = 102 + count.index
@@ -118,11 +118,11 @@ resource "azurerm_network_security_rule" "security_rule" {
   access                      = "Allow"
   source_port_range           = "*"
   protocol                    = "Tcp"
-  destination_port_range      = "${element(var.sidecar_ports, count.index)}"
+  destination_port_range      = element(var.sidecar_ports, count.index)
   source_address_prefix       = "*"
   destination_address_prefix  = "*"
   network_security_group_name = azurerm_network_security_group.nsg.name
-  count                          = "${length(var.sidecar_ports)}"
+  count                       = length(var.sidecar_ports)
 }
 
 resource "azurerm_subnet_network_security_group_association" "ngassociation" {
@@ -146,7 +146,7 @@ resource "azurerm_linux_virtual_machine_scale_set" "cyral-sidecar-asg" {
   name                = "${local.name_prefix}-machine-scale-set"
   resource_group_name = azurerm_resource_group.cyral_sidecar.name
   location            = azurerm_resource_group.cyral_sidecar.location
-  sku                 = "Standard_F2"
+  sku                 = var.instance_type
   instances           = 1
   #TODO temporary username and password
   admin_username = var.username_vm
@@ -166,14 +166,14 @@ resource "azurerm_linux_virtual_machine_scale_set" "cyral-sidecar-asg" {
   )
 
   source_image_reference {
-    publisher = "Canonical"
-    offer     = "0001-com-ubuntu-server-jammy"
-    sku       = "22_04-lts"
-    version   = "latest"
+    publisher = var.source_image_publisher
+    offer     = var.source_image_offer
+    sku       = var.source_image_sku
+    version   = var.source_image_version
   }
 
   os_disk {
-    storage_account_type = "Standard_LRS"
+    storage_account_type = var.instance_os_disk_storage_account_type
     caching              = "ReadWrite"
   }
 
@@ -201,7 +201,7 @@ resource "azurerm_linux_virtual_machine_scale_set" "cyral-sidecar-asg" {
 }
 
 resource "azurerm_monitor_autoscale_setting" "monitor-autoscale-setting" {
-  count = var.auto_scale_count
+  count               = var.auto_scale_count
   name                = "${local.name_prefix}-monitor-autoscale-setting"
   resource_group_name = azurerm_resource_group.cyral_sidecar.name
   location            = azurerm_resource_group.cyral_sidecar.location

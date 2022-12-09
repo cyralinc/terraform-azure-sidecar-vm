@@ -10,7 +10,7 @@ variable "password_vm" {
 
 variable "resource_group_name" {
   description = "Azure resource group name"
-  default = ""
+  default     = ""
 }
 
 variable "resource_group_location" {
@@ -41,11 +41,41 @@ variable "auto_scale_max" {
   default     = 2
 }
 
-# variable "instance_type" {
-#   description = "Amazon EC2 instance type for the sidecar instances"
-#   type        = string
-#   default     = "t3.medium"
-# }
+variable "instance_type" {
+  description = "Azure virtual machine scale set instance type for the sidecar instances"
+  type        = string
+  default     = "Standard_F2"
+}
+
+variable "source_image_publisher" {
+  description = "Specifies the publisher of the image used to create the virtual machines."
+  type        = string
+  default     = "Canonical"
+}
+
+variable "source_image_offer" {
+  description = "Specifies the offer of the image used to create the virtual machines."
+  type        = string
+  default     = "0001-com-ubuntu-server-jammy"
+}
+
+variable "source_image_sku" {
+  description = "Specifies the SKU of the image used to create the virtual machines."
+  type        = string
+  default     = "22_04-lts"
+}
+
+variable "source_image_version" {
+  description = "Specifies the version of the image used to create the virtual machines."
+  type        = string
+  default     = "latest"
+}
+
+variable "instance_os_disk_storage_account_type" {
+  description = "The Type of Storage Account which should back this Data Disk."
+  type        = string
+  default     = "Standard_LRS"
+}
 
 variable "load_balancer_tls_ports" {
   description = <<EOF
