@@ -37,9 +37,7 @@ locals {
     elk_address                   = var.elk_address
     elk_username                  = var.elk_username
     elk_password                  = var.elk_password
-
-    username_vm = var.username_vm
-    password_vm = var.password_vm
+    username_vm                   = var.username_vm
   }
 
   cloud_init_sh = templatefile("${path.module}/files/cloud-init-azure.sh.tmpl", local.templatevars)

@@ -1,11 +1,7 @@
 variable "username_vm" {
-  description = "Temporary virtual machine user name"
+  description = "Virtual machine user name"
   type        = string
-}
-
-variable "password_vm" {
-  description = "Temporary virtual machine password"
-  type        = string
+  default     = "adminuser"
 }
 
 variable "resource_group_name" {
@@ -89,6 +85,11 @@ EOF
 
 variable "secrets_location" {
   description = "Location in AWS Secrets Manager to store client_id, client_secret and container_registry_key"
+  type        = string
+}
+
+variable "admin_public_key" {
+  description = "The Public Key which should be used for authentication, which needs to be at least 2048-bit and in ssh-rsa format."
   type        = string
 }
 

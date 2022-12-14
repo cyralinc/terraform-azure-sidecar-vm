@@ -143,21 +143,18 @@ resource "azurerm_role_assignment" "role_assignment" {
 }
 
 resource "azurerm_linux_virtual_machine_scale_set" "cyral-sidecar-asg" {
-  name                = "${local.name_prefix}-machine-scale-set"
-  resource_group_name = azurerm_resource_group.cyral_sidecar.name
-  location            = azurerm_resource_group.cyral_sidecar.location
-  sku                 = var.instance_type
-  instances           = 1
-  #TODO temporary username and password
-  admin_username = var.username_vm
-  admin_password = var.password_vm
+  name                            = "${local.name_prefix}-machine-scale-set"
+  resource_group_name             = azurerm_resource_group.cyral_sidecar.name
+  location                        = azurerm_resource_group.cyral_sidecar.location
+  sku                             = var.instance_type
+  instances                       = 1
+  admin_username                  = var.username_vm
+  disable_password_authentication = true
 
-  disable_password_authentication = false
-
-  #admin_ssh_key {
-  #  username   = "adminuser"
-  #  public_key = local.first_public_key
-  #}
+  admin_ssh_key {
+    username   = var.username_vm
+    public_key = var.admin_public_key
+  }
 
   custom_data = base64encode(<<-EOT
   #!/bin/bash -xe

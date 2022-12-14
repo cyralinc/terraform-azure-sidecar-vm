@@ -28,8 +28,7 @@ variable "elk_password" {
   description = "(Optional) Password to use to ship logs to ELK"
   type        = string
   default     = ""
-  # Only compatible with Terraform >=0.14
-  #sensitive   = true
+  sensitive   = true
 }
 
 # ################################
@@ -64,7 +63,6 @@ variable "splunk_token" {
   description = "Splunk token"
   type        = string
   default     = ""
-  # Only compatible with Terraform >=0.14
   sensitive   = true
 }
 
