@@ -36,11 +36,11 @@ variable "external_tls_type" {
   default     = "tls"
 }
 
-# variable "iam_policies" {
-#   description = "(Optional) List of IAM policies ARNs that will be attached to the sidecar IAM role"
-#   type        = list(string)
-#   default     = []
-# }
+variable "iam_policies" {
+  description = "(Optional) List of IAM policies that will be attached to the sidecar IAM role"
+  type        = list(string)
+  default     = []
+}
 
 variable "log_integration" {
   description = "Logs destination"

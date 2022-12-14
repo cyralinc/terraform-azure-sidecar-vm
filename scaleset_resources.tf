@@ -138,7 +138,7 @@ resource "azurerm_user_assigned_identity" "cyral_assigned_identity" {
 
 resource "azurerm_role_assignment" "role_assignment" {
   scope                = azurerm_linux_virtual_machine_scale_set.cyral-sidecar-asg.id
-  role_definition_name = "Owner"
+  role_definition_name = "Contributor"
   principal_id         = azurerm_user_assigned_identity.cyral_assigned_identity.principal_id
 }
 
