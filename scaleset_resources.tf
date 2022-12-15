@@ -27,6 +27,7 @@ resource "azurerm_subnet" "internal-subnet" {
 }
 
 resource "azurerm_public_ip" "public-ip" {
+  count               = var.public_load_balance ? 1 : 0
   name                = "${local.name_prefix}-public-ip"
   location            = azurerm_resource_group.cyral_sidecar.location
   resource_group_name = azurerm_resource_group.cyral_sidecar.name
@@ -42,15 +43,13 @@ resource "azurerm_lb" "vmss" {
   sku                 = "Standard"
   sku_tier            = "Regional"
 
-  frontend_ip_configuration {
-    name                 = "PublicIPAddress"
-    public_ip_address_id = azurerm_public_ip.public-ip.id
+  dynamic "frontend_ip_configuration" {
+    for_each = var.public_load_balance ? [1] : []
+    content {
+      name                 = "PublicIPAddress"
+      public_ip_address_id = azurerm_public_ip.public-ip[0].id
+    }
   }
-
-  depends_on = [
-    azurerm_public_ip.public-ip
-  ]
-
 }
 
 resource "azurerm_lb_backend_address_pool" "bpepool" {
@@ -62,32 +61,34 @@ resource "azurerm_lb_backend_address_pool" "bpepool" {
 }
 
 resource "azurerm_lb_probe" "vmss" {
+  count           = var.public_load_balance ? 1 : 0
   loadbalancer_id = azurerm_lb.vmss.id
   name            = "${local.name_prefix}-lb-probe"
   port            = 22
 }
 
 resource "azurerm_lb_rule" "lbnatrule" {
+  count           = var.public_load_balance ? 1 : 0
   loadbalancer_id                = azurerm_lb.vmss.id
   name                           = "SSH"
   protocol                       = "Tcp"
   frontend_port                  = 22
   backend_port                   = 22
   frontend_ip_configuration_name = "PublicIPAddress"
-  probe_id                       = azurerm_lb_probe.vmss.id
+  probe_id                       = azurerm_lb_probe.vmss[0].id
   backend_address_pool_ids       = [azurerm_lb_backend_address_pool.bpepool.id]
 }
 
-resource "azurerm_lb_rule" "lbnatrule-port-db" {
+resource "azurerm_lb_rule" "lbnatrule-port-db" {  
   loadbalancer_id                = azurerm_lb.vmss.id
   name                           = "${local.name_prefix}-tg${element(var.sidecar_ports, count.index)}"
   protocol                       = "Tcp"
   frontend_port                  = element(var.sidecar_ports, count.index)
   backend_port                   = element(var.sidecar_ports, count.index)
   frontend_ip_configuration_name = "PublicIPAddress"
-  probe_id                       = azurerm_lb_probe.vmss.id
+  probe_id                       = azurerm_lb_probe.vmss[0].id
   backend_address_pool_ids       = [azurerm_lb_backend_address_pool.bpepool.id]
-  count                          = length(var.sidecar_ports)
+  count                          = var.public_load_balance ? length(var.sidecar_ports) : 0
 }
 
 resource "azurerm_network_security_group" "nsg" {

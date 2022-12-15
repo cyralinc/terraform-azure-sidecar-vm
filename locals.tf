@@ -1,5 +1,5 @@
 locals {
-  sidecar_endpoint = azurerm_public_ip.public-ip.fqdn
+  sidecar_endpoint = var.public_load_balance ? azurerm_public_ip.public-ip[0].fqdn : ""
 
   protocol    = var.external_tls_type == "no-tls" ? "http" : "https"
   curl        = var.external_tls_type == "tls-skip-verify" ? "curl -k" : "curl"

@@ -93,6 +93,12 @@ variable "admin_public_key" {
   type        = string
 }
 
+variable "public_load_balance" {
+  description = "Define if load balancer public IP should be created if the sidecar is actually public."
+  type = bool
+  default = true
+}
+
 # variable "cloudwatch_logs_retention" {
 #   description = "Cloudwatch logs retention in days"
 #   type        = number
