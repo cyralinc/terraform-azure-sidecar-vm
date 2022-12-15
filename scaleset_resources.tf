@@ -36,7 +36,7 @@ resource "azurerm_public_ip" "public-ip" {
   sku                 = "Standard"
 }
 
-resource "azurerm_lb" "vmss" {
+resource "azurerm_lb" "lb" {
   name                = "${local.name_prefix}-lb"
   location            = azurerm_resource_group.cyral_sidecar.location
   resource_group_name = azurerm_resource_group.cyral_sidecar.name
@@ -53,40 +53,40 @@ resource "azurerm_lb" "vmss" {
 }
 
 resource "azurerm_lb_backend_address_pool" "bpepool" {
-  loadbalancer_id = azurerm_lb.vmss.id
+  loadbalancer_id = azurerm_lb.lb.id
   name            = "${local.name_prefix}-lb-backend-address-pool"
   depends_on = [
-    azurerm_lb.vmss
+    azurerm_lb.lb
   ]
 }
 
-resource "azurerm_lb_probe" "vmss" {
+resource "azurerm_lb_probe" "lb_probe" {
   count           = var.public_load_balance ? 1 : 0
-  loadbalancer_id = azurerm_lb.vmss.id
+  loadbalancer_id = azurerm_lb.lb.id
   name            = "${local.name_prefix}-lb-probe"
   port            = 22
 }
 
 resource "azurerm_lb_rule" "lbnatrule" {
   count           = var.public_load_balance ? 1 : 0
-  loadbalancer_id                = azurerm_lb.vmss.id
+  loadbalancer_id                = azurerm_lb.lb.id
   name                           = "SSH"
   protocol                       = "Tcp"
   frontend_port                  = 22
   backend_port                   = 22
   frontend_ip_configuration_name = "PublicIPAddress"
-  probe_id                       = azurerm_lb_probe.vmss[0].id
+  probe_id                       = azurerm_lb_probe.lb_probe[0].id
   backend_address_pool_ids       = [azurerm_lb_backend_address_pool.bpepool.id]
 }
 
-resource "azurerm_lb_rule" "lbnatrule-port-db" {  
-  loadbalancer_id                = azurerm_lb.vmss.id
+resource "azurerm_lb_rule" "lbnatrule_port_db" {  
+  loadbalancer_id                = azurerm_lb.lb.id
   name                           = "${local.name_prefix}-tg${element(var.sidecar_ports, count.index)}"
   protocol                       = "Tcp"
   frontend_port                  = element(var.sidecar_ports, count.index)
   backend_port                   = element(var.sidecar_ports, count.index)
   frontend_ip_configuration_name = "PublicIPAddress"
-  probe_id                       = azurerm_lb_probe.vmss[0].id
+  probe_id                       = azurerm_lb_probe.lb_probe[0].id
   backend_address_pool_ids       = [azurerm_lb_backend_address_pool.bpepool.id]
   count                          = var.public_load_balance ? length(var.sidecar_ports) : 0
 }
@@ -138,12 +138,12 @@ resource "azurerm_user_assigned_identity" "cyral_assigned_identity" {
 }
 
 resource "azurerm_role_assignment" "role_assignment" {
-  scope                = azurerm_linux_virtual_machine_scale_set.cyral-sidecar-asg.id
+  scope                = azurerm_linux_virtual_machine_scale_set.cyral_sidecar_asg.id
   role_definition_name = "Contributor"
   principal_id         = azurerm_user_assigned_identity.cyral_assigned_identity.principal_id
 }
 
-resource "azurerm_linux_virtual_machine_scale_set" "cyral-sidecar-asg" {
+resource "azurerm_linux_virtual_machine_scale_set" "cyral_sidecar_asg" {
   name                            = "${local.name_prefix}-machine-scale-set"
   resource_group_name             = azurerm_resource_group.cyral_sidecar.name
   location                        = azurerm_resource_group.cyral_sidecar.location
@@ -200,12 +200,12 @@ resource "azurerm_linux_virtual_machine_scale_set" "cyral-sidecar-asg" {
 
 }
 
-resource "azurerm_monitor_autoscale_setting" "monitor-autoscale-setting" {
+resource "azurerm_monitor_autoscale_setting" "monitor_autoscale_setting" {
   count               = var.auto_scale_count
   name                = "${local.name_prefix}-monitor-autoscale-setting"
   resource_group_name = azurerm_resource_group.cyral_sidecar.name
   location            = azurerm_resource_group.cyral_sidecar.location
-  target_resource_id  = azurerm_linux_virtual_machine_scale_set.cyral-sidecar-asg.id
+  target_resource_id  = azurerm_linux_virtual_machine_scale_set.cyral_sidecar_asg.id
 
   profile {
     name = "defaultProfile"
