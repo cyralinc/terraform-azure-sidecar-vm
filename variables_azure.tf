@@ -1,7 +1,7 @@
 variable "username_vm" {
   description = "Virtual machine user name"
   type        = string
-  default     = "adminuser"
+  default     = "ubuntu"
 }
 
 variable "resource_group_name" {
