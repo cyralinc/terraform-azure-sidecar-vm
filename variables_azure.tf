@@ -93,8 +93,8 @@ variable "admin_public_key" {
   type        = string
 }
 
-variable "public_load_balance" {
-  description = "Define if load balancer public IP should be created if the sidecar is actually public."
+variable "public_load_balancer" {
+  description = "Add a public IP to the load balancer."
   type = bool
   default = true
 }

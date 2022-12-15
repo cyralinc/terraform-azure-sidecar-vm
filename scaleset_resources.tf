@@ -27,7 +27,7 @@ resource "azurerm_subnet" "internal-subnet" {
 }
 
 resource "azurerm_public_ip" "public-ip" {
-  count               = var.public_load_balance ? 1 : 0
+  count               = var.public_load_balancer ? 1 : 0
   name                = "${local.name_prefix}-public-ip"
   location            = azurerm_resource_group.cyral_sidecar.location
   resource_group_name = azurerm_resource_group.cyral_sidecar.name
@@ -44,7 +44,7 @@ resource "azurerm_lb" "lb" {
   sku_tier            = "Regional"
 
   dynamic "frontend_ip_configuration" {
-    for_each = var.public_load_balance ? [1] : []
+    for_each = var.public_load_balancer ? [1] : []
     content {
       name                 = "PublicIPAddress"
       public_ip_address_id = azurerm_public_ip.public-ip[0].id
@@ -61,14 +61,14 @@ resource "azurerm_lb_backend_address_pool" "bpepool" {
 }
 
 resource "azurerm_lb_probe" "lb_probe" {
-  count           = var.public_load_balance ? 1 : 0
+  count           = var.public_load_balancer ? 1 : 0
   loadbalancer_id = azurerm_lb.lb.id
   name            = "${local.name_prefix}-lb-probe"
   port            = 22
 }
 
 resource "azurerm_lb_rule" "lbnatrule" {
-  count           = var.public_load_balance ? 1 : 0
+  count           = var.public_load_balancer ? 1 : 0
   loadbalancer_id                = azurerm_lb.lb.id
   name                           = "SSH"
   protocol                       = "Tcp"
@@ -88,7 +88,7 @@ resource "azurerm_lb_rule" "lbnatrule_port_db" {
   frontend_ip_configuration_name = "PublicIPAddress"
   probe_id                       = azurerm_lb_probe.lb_probe[0].id
   backend_address_pool_ids       = [azurerm_lb_backend_address_pool.bpepool.id]
-  count                          = var.public_load_balance ? length(var.sidecar_ports) : 0
+  count                          = var.public_load_balancer ? length(var.sidecar_ports) : 0
 }
 
 resource "azurerm_network_security_group" "nsg" {

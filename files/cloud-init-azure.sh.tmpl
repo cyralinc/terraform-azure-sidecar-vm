@@ -39,7 +39,7 @@ sudo chmod +x /usr/local/bin/docker-compose
 sudo ln -s /usr/local/bin/docker-compose /usr/bin/docker-compose
 docker-compose --version
 
-# Configure fd limit for ec2 instance and containers
+# Configure fd limit for instance and containers
 sudo bash -c 'cat > /etc/security/limits.d/fdlimit.conf' << EOF
 *       soft  nofile  65535
 *       hard  nofile  65535
@@ -51,7 +51,7 @@ EOF
 #EOF
 sudo systemctl restart docker
 
-# Add ec2-user to docker group
+# Add current user to docker group
 sudo usermod -a -G docker ${username_vm}
 newgrp docker
 
@@ -108,12 +108,6 @@ PRIMARY_SHARED_KEY=$PRIMARY_SHARED_KEY
 EOF
 
 echo "Downloading sidecar.compose.yaml..."
-echo "protocol: ${protocol}"
-echo "controlaplane_host: ${controlplane_host}"
-echo "curl: ${curl}"
-echo "SIDECAR_CLIENT_ID: $SIDECAR_CLIENT_ID"
-echo "SIDECAR_CLIENT_SECRET: $SIDECAR_CLIENT_SECRET"
-echo "sidecar_version: ${sidecar_version}"
 
 function get_token() {
   local url_token="${protocol}://${controlplane_host}:$1/v1/users/oidc/token"
