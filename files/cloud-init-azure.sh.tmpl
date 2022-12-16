@@ -82,10 +82,12 @@ mkdir -p /home/${username_vm}/cyral/
 curl -sL https://aka.ms/InstallAzureCLIDeb | sudo bash
 
 az login --identity
-export SIDECAR_CLIENT_ID=$(az keyvault secret show --vault-name ${key_vault_name} --name ${secrets_location} --query value -o tsv | jq -r .clientId)
-export SIDECAR_CLIENT_SECRET=$(az keyvault secret show --vault-name ${key_vault_name} --name ${secrets_location} --query value -o tsv | jq -r .clientSecret)
-export WORKSPACE_ID=$(az keyvault secret show --vault-name ${key_vault_name} --name ${secrets_location} --query value -o tsv | jq -r .workspaceId)
-export PRIMARY_SHARED_KEY=$(az keyvault secret show --vault-name ${key_vault_name} --name ${secrets_location} --query value -o tsv | jq -r .sharedPrimaryKey)
+secret_data=$(az keyvault secret show --vault-name ${key_vault_name} --name ${secrets_location} --query value -o tsv)
+export SIDECAR_CLIENT_ID=$(echo "$secret_data" | jq -r .clientId)
+export SIDECAR_CLIENT_SECRET=$(echo "$secret_data" | jq -r .clientSecret)
+export WORKSPACE_ID=$(echo "$secret_data" | jq -r .workspaceId)
+export PRIMARY_SHARED_KEY=$(echo "$secret_data" | jq -r .sharedPrimaryKey)
+unset secret_data
 
 echo "Initializing environment variables..."
 cat > /home/${username_vm}/.env << EOF
