@@ -44,11 +44,7 @@ sudo bash -c 'cat > /etc/security/limits.d/fdlimit.conf' << EOF
 *       soft  nofile  65535
 *       hard  nofile  65535
 EOF
-#sudo bash -c 'cat > /etc/sysconfig/docker' << EOF
-#DAEMON_MAXFILES=65535
-#OPTIONS="--default-ulimit nofile=65535:65535"
-#DAEMON_PIDFILE_TIMEOUT=10
-#EOF
+
 sudo systemctl restart docker
 
 # Add current user to docker group
@@ -64,12 +60,7 @@ export PATH=$PATH:/usr/local/bin
 jq --version
 
 # echo "Fetching public hostname..."
-export STATUS_CODE=$(curl -o instance-id.txt -w "%%{http_code}\n" -s http://169.254.169.254/latest/meta-data/instance-id -m 10)
-if [ $STATUS_CODE -eq 200 ]; then
-  export INSTANCE_ID=$(cat instance-id.txt)
-else
-  export INSTANCE_ID=$HOSTNAME
-fi
+export INSTANCE_ID=$HOSTNAME
 echo "Setting INSTANCE_ID to '$INSTANCE_ID'"
 
 export NGINX_RESOLVER=$(cat /etc/resolv.conf | grep nameserver | awk '{print $2}')
@@ -128,7 +119,7 @@ function download_sidecar() {
     fi
   fi
   local access_token=$(echo "$token" | jq -r .access_token)
-  local url="${protocol}://${controlplane_host}/deploy/docker-compose?TemplateVersion=${sidecar_version}&TemplateType=docker&LogIntegration=${log_integration}&secretsManagerType=${secret_manager_type}&MetricsIntegration=${metrics_integration}&HCVaultIntegrationID=${hc_vault_integration_id}&WiresEnabled=${repositories_supported}"
+  local url="${protocol}://${controlplane_host}/deploy/docker-compose?TemplateVersion=${sidecar_version}&TemplateType=docker&LogIntegration=${log_integration}&secretManagerType=${secret_manager_type}&MetricsIntegration=${metrics_integration}&HCVaultIntegrationID=${hc_vault_integration_id}&WiresEnabled=${repositories_supported}"
   echo "Trying to download the sidecar template from: $url"
   if [[ $(${curl} -s -o /home/${username_vm}/sidecar.compose.yaml -w "%%{http_code}" -L "$url" -H "Authorization: Bearer $access_token") = 200 ]]; then
     return 0
@@ -140,11 +131,8 @@ declare -f get_token
 declare -f download_sidecar
 retry download_sidecar
 
-#unset SIDECAR_CLIENT_ID
-#unset SIDECAR_CLIENT_SECRET
-
 az keyvault secret show --vault-name ${key_vault_name} --name ${secrets_location} --query value -o tsv | jq -r .containerRegistryKey | base64 --decode > /home/${username_vm}/cyral/container_registry_key.json
-until [ -f /home/${username_vm}/cyral/container_registry_key.json ]; do echo "wait"; sleep 1; done
+#until [ -f /home/${username_vm}/cyral/container_registry_key.json ]; do echo "wait"; sleep 1; done
 
 function login () {
   if [[ ${container_registry} == *".amazonaws.com"* ]]; then
@@ -162,4 +150,5 @@ function launch () { cd /home/${username_vm} && sudo docker-compose -f sidecar.c
 retry login
 retry launch
 
-
+unset SIDECAR_CLIENT_ID
+unset SIDECAR_CLIENT_SECRET
