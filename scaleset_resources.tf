@@ -50,7 +50,7 @@ resource "azurerm_lb_probe" "lb_probe" {
   count           = var.public_load_balancer ? 1 : 0
   loadbalancer_id = azurerm_lb.lb.id
   name            = "${local.name_prefix}-lb-probe"
-  port            = 22
+  port            = 8888
 }
 
 resource "azurerm_lb_rule" "lbnatrule" {
