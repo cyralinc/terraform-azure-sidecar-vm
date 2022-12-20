@@ -103,13 +103,3 @@ variable "subnets" {
   description = "Subnets to add sidecar to (list of string)"
   type        = list(string)
 }
-
-# variable "cloudwatch_logs_retention" {
-#   description = "Cloudwatch logs retention in days"
-#   type        = number
-#   default     = 14
-#   #  validation {
-#   #    condition     = contains([1, 3, 5, 7, 14, 30, 60, 90, 120, 150, 180, 365, 400, 545, 731, 1827, 3653], var.cloudwatch_logs_retention)
-#   #    error_message = "Valid values are: [1, 3, 5, 7, 14, 30, 60, 90, 120, 150, 180, 365, 400, 545, 731, 1827, 3653]."
-#   #  }
-# }

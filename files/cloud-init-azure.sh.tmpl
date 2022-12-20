@@ -132,13 +132,9 @@ declare -f download_sidecar
 retry download_sidecar
 
 az keyvault secret show --vault-name ${key_vault_name} --name ${secrets_location} --query value -o tsv | jq -r .containerRegistryKey | base64 --decode > /home/${username_vm}/cyral/container_registry_key.json
-#until [ -f /home/${username_vm}/cyral/container_registry_key.json ]; do echo "wait"; sleep 1; done
 
-function login () {
-  if [[ ${container_registry} == *".amazonaws.com"* ]]; then
-    echo "(login): Logging in to AWS ECR..."
-    eval $(aws ecr --no-include-email get-login  --region fff)
-  elif [ -s /home/${username_vm}/cyral/container_registry_key.json ]; then
+function login () {  
+  if [ -s /home/${username_vm}/cyral/container_registry_key.json ]; then
     echo "(login): Logging in to GCR..."
     cat /home/${username_vm}/cyral/container_registry_key.json | docker login -u _json_key --password-stdin https://gcr.io
   else

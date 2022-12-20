@@ -9,6 +9,12 @@ variable "container_registry_username" {
   default     = ""
 }
 
+variable "container_registry_key" {
+  description = "Key provided by Cyral for authenticating on Cyral's container registry"
+  type        = string
+  default     = ""
+}
+
 variable "client_id" {
   description = "The client id assigned to the sidecar"
   type        = string
@@ -19,14 +25,8 @@ variable "client_secret" {
   type        = string
 }
 
-variable "container_registry_key" {
-  description = "Key provided by Cyral for authenticating on Cyral's container registry"
-  type        = string
-  default     = ""
-}
-
 variable "control_plane" {
-  description = "Address of the control plane - <tenant>.cyral.com"
+  description = "Address of the control plane - <tenant>.app.cyral.com"
   type        = string
 }
 
@@ -42,12 +42,6 @@ variable "iam_policies" {
   default     = []
 }
 
-variable "log_integration" {
-  description = "Logs destination"
-  type        = string
-  default     = "azure-log-analytics"
-}
-
 variable "secret_manager_type" {
   description = "Define secret manager type for sidecar_client_id and sidecar_client_secret"
   type        = string
@@ -58,6 +52,12 @@ variable "metrics_integration" {
   description = "Metrics destination"
   type        = string
   default     = ""
+}
+
+variable "log_integration" {
+  description = "Logs destination"
+  type        = string
+  default     = "azure-log-analytics"
 }
 
 variable "mongodb_port_alloc_range_low" {
