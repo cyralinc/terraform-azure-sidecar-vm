@@ -12,20 +12,6 @@ resource "azurerm_log_analytics_workspace" "cyral_log_analytics_workspace" {
   retention_in_days   = 30
 }
 
-resource "azurerm_virtual_network" "virtual-network" {
-  name                = "${local.name_prefix}-virtual-network"
-  resource_group_name = azurerm_resource_group.cyral_sidecar.name
-  location            = azurerm_resource_group.cyral_sidecar.location
-  address_space       = ["10.0.0.0/16"]
-}
-
-resource "azurerm_subnet" "internal-subnet" {
-  name                 = "${local.name_prefix}-subnet"
-  resource_group_name  = azurerm_resource_group.cyral_sidecar.name
-  virtual_network_name = azurerm_virtual_network.virtual-network.name
-  address_prefixes     = ["10.0.2.0/24"]
-}
-
 resource "azurerm_public_ip" "public-ip" {
   count               = var.public_load_balancer ? 1 : 0
   name                = "${local.name_prefix}-public-ip"
@@ -68,7 +54,7 @@ resource "azurerm_lb_probe" "lb_probe" {
 }
 
 resource "azurerm_lb_rule" "lbnatrule" {
-  count           = var.public_load_balancer ? 1 : 0
+  count                          = var.public_load_balancer ? 1 : 0
   loadbalancer_id                = azurerm_lb.lb.id
   name                           = "SSH"
   protocol                       = "Tcp"
@@ -79,7 +65,7 @@ resource "azurerm_lb_rule" "lbnatrule" {
   backend_address_pool_ids       = [azurerm_lb_backend_address_pool.bpepool.id]
 }
 
-resource "azurerm_lb_rule" "lbnatrule_port_db" {  
+resource "azurerm_lb_rule" "lbnatrule_port_db" {
   loadbalancer_id                = azurerm_lb.lb.id
   name                           = "${local.name_prefix}-tg${element(var.sidecar_ports, count.index)}"
   protocol                       = "Tcp"
@@ -127,7 +113,8 @@ resource "azurerm_network_security_rule" "security_rule" {
 }
 
 resource "azurerm_subnet_network_security_group_association" "ngassociation" {
-  subnet_id                 = azurerm_subnet.internal-subnet.id
+  count                     = length(var.subnets)
+  subnet_id                 = var.subnets[count.index]
   network_security_group_id = azurerm_network_security_group.nsg.id
 }
 
@@ -181,11 +168,14 @@ resource "azurerm_linux_virtual_machine_scale_set" "cyral_sidecar_asg" {
     name    = "${local.name_prefix}-network-interface"
     primary = true
 
-    ip_configuration {
-      name                                   = "internal"
-      primary                                = true
-      subnet_id                              = azurerm_subnet.internal-subnet.id
-      load_balancer_backend_address_pool_ids = [azurerm_lb_backend_address_pool.bpepool.id]
+    dynamic "ip_configuration" {
+      for_each = var.subnets
+      content {
+        name                                   = "subnet"
+        primary                                = true
+        subnet_id                              = ip_configuration.value
+        load_balancer_backend_address_pool_ids = [azurerm_lb_backend_address_pool.bpepool.id]
+      }
     }
   }
 
@@ -193,11 +183,6 @@ resource "azurerm_linux_virtual_machine_scale_set" "cyral_sidecar_asg" {
     type         = "UserAssigned"
     identity_ids = [azurerm_user_assigned_identity.cyral_assigned_identity.id]
   }
-
-  depends_on = [
-    azurerm_virtual_network.virtual-network
-  ]
-
 }
 
 resource "azurerm_monitor_autoscale_setting" "monitor_autoscale_setting" {

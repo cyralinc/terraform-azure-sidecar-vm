@@ -95,8 +95,13 @@ variable "admin_public_key" {
 
 variable "public_load_balancer" {
   description = "Add a public IP to the load balancer."
-  type = bool
-  default = true
+  type        = bool
+  default     = true
+}
+
+variable "subnets" {
+  description = "Subnets to add sidecar to (list of string)"
+  type        = list(string)
 }
 
 # variable "cloudwatch_logs_retention" {
