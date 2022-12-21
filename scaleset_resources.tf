@@ -63,18 +63,6 @@ resource "azurerm_lb_probe" "lb_probe" {
   interval_in_seconds = 5
 }
 
-resource "azurerm_lb_rule" "lbnatrule" {
-  count                          = var.public_load_balancer ? 1 : 0
-  loadbalancer_id                = azurerm_lb.lb.id
-  name                           = "SSH"
-  protocol                       = "Tcp"
-  frontend_port                  = 22
-  backend_port                   = 22
-  frontend_ip_configuration_name = var.frontend_ip_config_name
-  probe_id                       = azurerm_lb_probe.lb_probe[0].id
-  backend_address_pool_ids       = [azurerm_lb_backend_address_pool.bpepool.id]
-}
-
 resource "azurerm_lb_rule" "lbnatrule_port_db" {
   loadbalancer_id                = azurerm_lb.lb.id
   name                           = "${local.name_prefix}-tg${element(var.sidecar_ports, count.index)}"
