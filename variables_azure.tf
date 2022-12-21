@@ -1,4 +1,4 @@
-variable "username_vm" {
+variable "vm_username" {
   description = "Virtual machine user name"
   type        = string
   default     = "ubuntu"

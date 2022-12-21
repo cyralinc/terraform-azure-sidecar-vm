@@ -133,11 +133,11 @@ resource "azurerm_linux_virtual_machine_scale_set" "cyral_sidecar_asg" {
   resource_group_name             = azurerm_resource_group.cyral_sidecar.name
   location                        = azurerm_resource_group.cyral_sidecar.location
   sku                             = var.instance_type
-  admin_username                  = var.username_vm
+  admin_username                  = var.vm_username
   disable_password_authentication = true
 
   admin_ssh_key {
-    username   = var.username_vm
+    username   = var.vm_username
     public_key = var.admin_public_key
   }
 

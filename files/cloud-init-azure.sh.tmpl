@@ -48,7 +48,7 @@ EOF
 sudo systemctl restart docker
 
 # Add current user to docker group
-sudo usermod -a -G docker ${username_vm}
+sudo usermod -a -G docker ${vm_username}
 newgrp docker
 
 # Install JQ
@@ -67,7 +67,7 @@ export NGINX_RESOLVER=$(cat /etc/resolv.conf | grep nameserver | awk '{print $2}
 echo "Setting NGINX_RESOLVER to '$NGINX_RESOLVER'"
 
 echo "Fetching secrets..."
-mkdir -p /home/${username_vm}/cyral/
+mkdir -p /home/${vm_username}/cyral/
 
 # Install Azure CLI
 curl -sL https://aka.ms/InstallAzureCLIDeb | sudo bash
@@ -81,7 +81,7 @@ export PRIMARY_SHARED_KEY=$(echo "$secret_data" | jq -r .sharedPrimaryKey)
 unset secret_data
 
 echo "Initializing environment variables..."
-cat > /home/${username_vm}/.env << EOF
+cat > /home/${vm_username}/.env << EOF
 SIDECAR_ID=${sidecar_id}
 CONTROLPLANE_HOST=${controlplane_host}
 CONTAINER_REGISTRY=${container_registry}
@@ -121,7 +121,7 @@ function download_sidecar() {
   local access_token=$(echo "$token" | jq -r .access_token)
   local url="${protocol}://${controlplane_host}/deploy/docker-compose?TemplateVersion=${sidecar_version}&TemplateType=docker&LogIntegration=${log_integration}&secretManagerType=${secret_manager_type}&MetricsIntegration=${metrics_integration}&HCVaultIntegrationID=${hc_vault_integration_id}&WiresEnabled=${repositories_supported}"
   echo "Trying to download the sidecar template from: $url"
-  if [[ $(${curl} -s -o /home/${username_vm}/sidecar.compose.yaml -w "%%{http_code}" -L "$url" -H "Authorization: Bearer $access_token") = 200 ]]; then
+  if [[ $(${curl} -s -o /home/${vm_username}/sidecar.compose.yaml -w "%%{http_code}" -L "$url" -H "Authorization: Bearer $access_token") = 200 ]]; then
     return 0
   fi
   return 1
@@ -131,18 +131,18 @@ declare -f get_token
 declare -f download_sidecar
 retry download_sidecar
 
-az keyvault secret show --vault-name ${key_vault_name} --name ${secrets_location} --query value -o tsv | jq -r .containerRegistryKey | base64 --decode > /home/${username_vm}/cyral/container_registry_key.json
+az keyvault secret show --vault-name ${key_vault_name} --name ${secrets_location} --query value -o tsv | jq -r .containerRegistryKey | base64 --decode > /home/${vm_username}/cyral/container_registry_key.json
 
 function login () {  
-  if [ -s /home/${username_vm}/cyral/container_registry_key.json ]; then
+  if [ -s /home/${vm_username}/cyral/container_registry_key.json ]; then
     echo "(login): Logging in to GCR..."
-    cat /home/${username_vm}/cyral/container_registry_key.json | docker login -u _json_key --password-stdin https://gcr.io
+    cat /home/${vm_username}/cyral/container_registry_key.json | docker login -u _json_key --password-stdin https://gcr.io
   else
     echo "(login): Won't log in automatically to any image registry. Image registry set to: gcr.io/cyral-dev"
   fi
 }
 
-function launch () { cd /home/${username_vm} && sudo docker-compose -f sidecar.compose.yaml up -d; }
+function launch () { cd /home/${vm_username} && sudo docker-compose -f sidecar.compose.yaml up -d; }
 retry login
 retry launch
 
