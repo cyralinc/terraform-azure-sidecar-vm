@@ -16,7 +16,7 @@ variable "resource_group_location" {
 variable "auto_scale_count" {
   description = "Set to 1 to enable the auto scale setting, 0 to disable. Only for debugging."
   type        = number
-  default     = 0
+  default     = 1
 }
 
 variable "auto_scale_min" {
