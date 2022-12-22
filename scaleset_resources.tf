@@ -1,22 +1,22 @@
 data "azurerm_client_config" "current" {}
 
-resource "azurerm_resource_group" "cyral_sidecar" {
+resource "azurerm_resource_group" "resource_group" {
   name     = var.resource_group_name == "" ? "${local.name_prefix}" : var.resource_group_name
   location = var.resource_group_location
 }
 
 resource "azurerm_log_analytics_workspace" "cyral_log_analytics_workspace" {
   name                = "${local.name_prefix}-log-analytics"
-  location            = azurerm_resource_group.cyral_sidecar.location
-  resource_group_name = azurerm_resource_group.cyral_sidecar.name
+  location            = azurerm_resource_group.resource_group.location
+  resource_group_name = azurerm_resource_group.resource_group.name
   retention_in_days   = 30
 }
 
 resource "azurerm_public_ip" "public-ip" {
   count               = var.public_load_balancer ? 1 : 0
   name                = "${local.name_prefix}-public-ip"
-  location            = azurerm_resource_group.cyral_sidecar.location
-  resource_group_name = azurerm_resource_group.cyral_sidecar.name
+  location            = azurerm_resource_group.resource_group.location
+  resource_group_name = azurerm_resource_group.resource_group.name
   allocation_method   = "Static"
   domain_name_label   = local.name_prefix
   sku                 = "Standard"
@@ -24,8 +24,8 @@ resource "azurerm_public_ip" "public-ip" {
 
 resource "azurerm_lb" "lb" {
   name                = "${local.name_prefix}-lb"
-  location            = azurerm_resource_group.cyral_sidecar.location
-  resource_group_name = azurerm_resource_group.cyral_sidecar.name
+  location            = azurerm_resource_group.resource_group.location
+  resource_group_name = azurerm_resource_group.resource_group.name
   sku                 = "Standard"
   sku_tier            = "Regional"
 
@@ -81,12 +81,12 @@ resource "azurerm_lb_rule" "lbnatrule_port_db" {
 
 resource "azurerm_network_security_group" "nsg" {
   name                = "${local.name_prefix}-network-security-group"
-  location            = azurerm_resource_group.cyral_sidecar.location
-  resource_group_name = azurerm_resource_group.cyral_sidecar.name
+  location            = azurerm_resource_group.resource_group.location
+  resource_group_name = azurerm_resource_group.resource_group.name
 }
 
 resource "azurerm_network_security_rule" "security_rule_ssh" {
-  resource_group_name         = azurerm_resource_group.cyral_sidecar.name
+  resource_group_name         = azurerm_resource_group.resource_group.name
   name                        = "${local.name_prefix}-nsr-tg22"
   priority                    = 101
   direction                   = "Inbound"
@@ -100,7 +100,7 @@ resource "azurerm_network_security_rule" "security_rule_ssh" {
 }
 
 resource "azurerm_network_security_rule" "security_rule" {
-  resource_group_name         = azurerm_resource_group.cyral_sidecar.name
+  resource_group_name         = azurerm_resource_group.resource_group.name
   name                        = "${local.name_prefix}-nsr-tg${element(var.sidecar_ports, count.index)}"
   priority                    = 102 + count.index
   direction                   = "Inbound"
@@ -121,9 +121,9 @@ resource "azurerm_subnet_network_security_group_association" "ngassociation" {
 }
 
 resource "azurerm_user_assigned_identity" "cyral_assigned_identity" {
-  location            = azurerm_resource_group.cyral_sidecar.location
+  location            = azurerm_resource_group.resource_group.location
   name                = "${local.name_prefix}-user-assigned_identity"
-  resource_group_name = azurerm_resource_group.cyral_sidecar.name
+  resource_group_name = azurerm_resource_group.resource_group.name
 }
 
 resource "azurerm_role_assignment" "role_assignment" {
@@ -134,8 +134,8 @@ resource "azurerm_role_assignment" "role_assignment" {
 
 resource "azurerm_linux_virtual_machine_scale_set" "cyral_sidecar_asg" {
   name                            = "${local.name_prefix}-machine-scale-set"
-  resource_group_name             = azurerm_resource_group.cyral_sidecar.name
-  location                        = azurerm_resource_group.cyral_sidecar.location
+  resource_group_name             = azurerm_resource_group.resource_group.name
+  location                        = azurerm_resource_group.resource_group.location
   sku                             = var.instance_type
   admin_username                  = var.vm_username
   disable_password_authentication = true
@@ -201,8 +201,8 @@ resource "azurerm_linux_virtual_machine_scale_set" "cyral_sidecar_asg" {
 resource "azurerm_monitor_autoscale_setting" "monitor_autoscale_setting" {
   count               = var.auto_scale_count
   name                = "${local.name_prefix}-monitor-autoscale-setting"
-  resource_group_name = azurerm_resource_group.cyral_sidecar.name
-  location            = azurerm_resource_group.cyral_sidecar.location
+  resource_group_name = azurerm_resource_group.resource_group.name
+  location            = azurerm_resource_group.resource_group.location
   target_resource_id  = azurerm_linux_virtual_machine_scale_set.cyral_sidecar_asg.id
 
   profile {

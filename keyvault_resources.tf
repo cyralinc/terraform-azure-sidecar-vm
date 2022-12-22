@@ -6,15 +6,15 @@ locals {
     workspaceId          = azurerm_log_analytics_workspace.cyral_log_analytics_workspace.workspace_id
     sharedPrimaryKey     = azurerm_log_analytics_workspace.cyral_log_analytics_workspace.primary_shared_key
   }
-    depends_on = [
-        azurerm_log_analytics_workspace.cyral_log_analytics_workspace
-      ]  
+  depends_on = [
+    azurerm_log_analytics_workspace.cyral_log_analytics_workspace
+  ]
 }
 
 resource "azurerm_key_vault" "cyral-sidecar-secret" {
   name                        = "${local.name_prefix}-kv"
-  location                    = azurerm_resource_group.cyral_sidecar.location
-  resource_group_name         = azurerm_resource_group.cyral_sidecar.name
+  location                    = azurerm_resource_group.resource_group.location
+  resource_group_name         = azurerm_resource_group.resource_group.name
   enabled_for_disk_encryption = true
   tenant_id                   = data.azurerm_client_config.current.tenant_id
   soft_delete_retention_days  = 7
