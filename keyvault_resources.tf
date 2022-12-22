@@ -51,7 +51,7 @@ resource "azurerm_key_vault" "key_vault" {
   }
 }
 
-resource "azurerm_key_vault_secret" "cyral-sidecar-secret-version" {
+resource "azurerm_key_vault_secret" "key_vault_secret" {
   name         = "cyral-sidecars-${var.sidecar_id}-self-signed-certificate"
   value        = jsonencode(local.sidecar_secrets)
   key_vault_id = azurerm_key_vault.key_vault.id
