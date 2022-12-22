@@ -73,16 +73,6 @@ variable "instance_os_disk_storage_account_type" {
   default     = "Standard_LRS"
 }
 
-variable "load_balancer_tls_ports" {
-  description = <<EOF
-List of ports that will have TLS terminated at load balancer level
-(snowflake support, for example). If assigned, 'load_balancer_certificate_arn' 
-must also be provided. This parameter must be a subset of 'sidecar_ports'.
-EOF
-  type        = list(number)
-  default     = []
-}
-
 variable "secrets_location" {
   description = "Location in AWS Secrets Manager to store client_id, client_secret and container_registry_key"
   type        = string

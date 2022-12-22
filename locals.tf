@@ -24,7 +24,6 @@ locals {
     mongodb_port_alloc_range_low  = var.mongodb_port_alloc_range_low
     mongodb_port_alloc_range_high = var.mongodb_port_alloc_range_high
     mysql_multiplexed_port        = var.mysql_multiplexed_port
-    load_balancer_tls_ports       = join(",", var.load_balancer_tls_ports)
     secret_manager_type           = var.secret_manager_type
     dd_api_key                    = var.dd_api_key
     splunk_index                  = var.splunk_index
