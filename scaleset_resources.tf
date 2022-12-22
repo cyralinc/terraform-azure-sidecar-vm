@@ -32,7 +32,7 @@ resource "azurerm_lb" "lb" {
   dynamic "frontend_ip_configuration" {
     for_each = var.public_load_balancer ? [1] : []
     content {
-      name                 = var.frontend_ip_config_name
+      name                 = "${local.name_prefix}_${var.frontend_ip_config_name}"
       public_ip_address_id = azurerm_public_ip.public-ip[0].id
     }
   }
@@ -40,7 +40,7 @@ resource "azurerm_lb" "lb" {
   dynamic "frontend_ip_configuration" {
     for_each = var.public_load_balancer ? [] : var.subnets
     content {
-      name                          = var.frontend_ip_config_name
+      name                          = format("${local.name_prefix}_${var.frontend_ip_config_name}_%s", index(var.subnets, frontend_ip_configuration.value))
       subnet_id                     = frontend_ip_configuration.value
       private_ip_address_allocation = "Dynamic"
       private_ip_address_version    = "IPv4"
@@ -50,11 +50,11 @@ resource "azurerm_lb" "lb" {
 
 resource "azurerm_lb_backend_address_pool" "bpepool" {
   loadbalancer_id = azurerm_lb.lb.id
-  name            = "${local.name_prefix}-lb-backend-address-pool"
+  name            = format("${local.name_prefix}_-lb-backend-address-pool_%s", count.index)
+  count           = var.public_load_balancer ? 1 : length(var.subnets)
 }
 
 resource "azurerm_lb_probe" "lb_probe" {
-  count               = var.public_load_balancer ? 1 : 0
   loadbalancer_id     = azurerm_lb.lb.id
   name                = "${local.name_prefix}-lb-probe"
   port                = 8888
@@ -63,16 +63,20 @@ resource "azurerm_lb_probe" "lb_probe" {
   interval_in_seconds = 5
 }
 
+locals {
+  subnets_and_ports = setproduct(var.subnets, var.sidecar_ports)
+}
+
 resource "azurerm_lb_rule" "lbnatrule_port_db" {
   loadbalancer_id                = azurerm_lb.lb.id
-  name                           = "${local.name_prefix}-tg${element(var.sidecar_ports, count.index)}"
+  name                           = var.public_load_balancer ? "${local.name_prefix}-tg${element(var.sidecar_ports, count.index)}" : "${local.name_prefix}-tg${local.subnets_and_ports[count.index][1]}_${count.index}"
   protocol                       = "Tcp"
-  frontend_port                  = element(var.sidecar_ports, count.index)
-  backend_port                   = element(var.sidecar_ports, count.index)
-  frontend_ip_configuration_name = var.frontend_ip_config_name
-  probe_id                       = azurerm_lb_probe.lb_probe[0].id
-  backend_address_pool_ids       = [azurerm_lb_backend_address_pool.bpepool.id]
-  count                          = var.public_load_balancer ? length(var.sidecar_ports) : 0
+  frontend_port                  = var.public_load_balancer ? element(var.sidecar_ports, count.index) : local.subnets_and_ports[count.index][1]
+  backend_port                   = var.public_load_balancer ? element(var.sidecar_ports, count.index) : local.subnets_and_ports[count.index][1]
+  frontend_ip_configuration_name = var.public_load_balancer ? "${local.name_prefix}_${var.frontend_ip_config_name}" : format("${local.name_prefix}_${var.frontend_ip_config_name}_%s", index(var.subnets, local.subnets_and_ports[count.index][0]))
+  probe_id                       = azurerm_lb_probe.lb_probe.id
+  backend_address_pool_ids       = var.public_load_balancer ? [azurerm_lb_backend_address_pool.bpepool[0].id] : [azurerm_lb_backend_address_pool.bpepool[index(var.subnets, local.subnets_and_ports[count.index][0])].id]
+  count                          = var.public_load_balancer ? length(var.sidecar_ports) : length(local.subnets_and_ports)
 }
 
 resource "azurerm_network_security_group" "nsg" {
@@ -165,16 +169,25 @@ resource "azurerm_linux_virtual_machine_scale_set" "cyral_sidecar_asg" {
     name    = "${local.name_prefix}-network-interface"
     primary = true
 
-    dynamic "ip_configuration" {
-      for_each = var.subnets
-      content {
-        name                                   = "subnet"
-        primary                                = true
-        subnet_id                              = ip_configuration.value
-        load_balancer_backend_address_pool_ids = [azurerm_lb_backend_address_pool.bpepool.id]
-        public_ip_address {
-          name = "public_ip"
-        }
+    # dynamic "ip_configuration" {
+    #   for_each = var.subnets
+    #   content {
+    #     name                                   = "subnet"
+    #     primary                                = true
+    #     subnet_id                              = ip_configuration.value
+    #     load_balancer_backend_address_pool_ids = [azurerm_lb_backend_address_pool.bpepool.id]
+    #     public_ip_address {
+    #       name = "public_ip"
+    #     }
+    #   }
+    # }
+    ip_configuration {
+      name                                   = "subnet"
+      primary                                = true
+      subnet_id                              = var.subnets[0]
+      load_balancer_backend_address_pool_ids = [azurerm_lb_backend_address_pool.bpepool[0].id]
+      public_ip_address {
+        name = "public_ip"
       }
     }
   }
