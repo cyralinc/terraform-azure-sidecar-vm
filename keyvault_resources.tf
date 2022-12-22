@@ -11,7 +11,7 @@ locals {
   ]
 }
 
-resource "azurerm_key_vault" "cyral-sidecar-secret" {
+resource "azurerm_key_vault" "key_vault" {
   name                        = "${local.name_prefix}-kv"
   location                    = azurerm_resource_group.resource_group.location
   resource_group_name         = azurerm_resource_group.resource_group.name
@@ -54,6 +54,6 @@ resource "azurerm_key_vault" "cyral-sidecar-secret" {
 resource "azurerm_key_vault_secret" "cyral-sidecar-secret-version" {
   name         = "cyral-sidecars-${var.sidecar_id}-self-signed-certificate"
   value        = jsonencode(local.sidecar_secrets)
-  key_vault_id = azurerm_key_vault.cyral-sidecar-secret.id
+  key_vault_id = azurerm_key_vault.key_vault.id
 }
 
