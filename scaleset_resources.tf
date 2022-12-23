@@ -48,7 +48,7 @@ resource "azurerm_lb" "lb" {
   }
 }
 
-resource "azurerm_lb_backend_address_pool" "bpepool" {
+resource "azurerm_lb_backend_address_pool" "lb_backend_address_pool" {
   loadbalancer_id = azurerm_lb.lb.id
   name            = format("${local.name_prefix}_-lb-backend-address-pool_%s", count.index)
   count           = var.public_load_balancer ? 1 : length(var.subnets)
@@ -67,7 +67,7 @@ locals {
   subnets_and_ports = setproduct(var.subnets, var.sidecar_ports)
 }
 
-resource "azurerm_lb_rule" "lbnatrule_port_db" {
+resource "azurerm_lb_rule" "lb_rule" {
   loadbalancer_id                = azurerm_lb.lb.id
   name                           = var.public_load_balancer ? "${local.name_prefix}-tg${element(var.sidecar_ports, count.index)}" : "${local.name_prefix}-tg${local.subnets_and_ports[count.index][1]}_${count.index}"
   protocol                       = "Tcp"
@@ -75,7 +75,7 @@ resource "azurerm_lb_rule" "lbnatrule_port_db" {
   backend_port                   = var.public_load_balancer ? element(var.sidecar_ports, count.index) : local.subnets_and_ports[count.index][1]
   frontend_ip_configuration_name = var.public_load_balancer ? "${local.name_prefix}_${var.frontend_ip_config_name}" : format("${local.name_prefix}_${var.frontend_ip_config_name}_%s", index(var.subnets, local.subnets_and_ports[count.index][0]))
   probe_id                       = azurerm_lb_probe.lb_probe.id
-  backend_address_pool_ids       = var.public_load_balancer ? [azurerm_lb_backend_address_pool.bpepool[0].id] : [azurerm_lb_backend_address_pool.bpepool[index(var.subnets, local.subnets_and_ports[count.index][0])].id]
+  backend_address_pool_ids       = var.public_load_balancer ? [azurerm_lb_backend_address_pool.lb_backend_address_pool[0].id] : [azurerm_lb_backend_address_pool.lb_backend_address_pool[index(var.subnets, local.subnets_and_ports[count.index][0])].id]
   count                          = var.public_load_balancer ? length(var.sidecar_ports) : length(local.subnets_and_ports)
 }
 
@@ -99,7 +99,7 @@ resource "azurerm_network_security_rule" "security_rule_ssh" {
   network_security_group_name = azurerm_network_security_group.nsg.name
 }
 
-resource "azurerm_network_security_rule" "security_rule" {
+resource "azurerm_network_security_rule" "security_rule_sidecar_inbound" {
   resource_group_name         = azurerm_resource_group.resource_group.name
   name                        = "${local.name_prefix}-nsr-tg${element(var.sidecar_ports, count.index)}"
   priority                    = 102 + count.index
@@ -114,25 +114,25 @@ resource "azurerm_network_security_rule" "security_rule" {
   count                       = length(var.sidecar_ports)
 }
 
-resource "azurerm_subnet_network_security_group_association" "ngassociation" {
+resource "azurerm_subnet_network_security_group_association" "subnet_nsg_association" {
   count                     = length(var.subnets)
   subnet_id                 = var.subnets[count.index]
   network_security_group_id = azurerm_network_security_group.nsg.id
 }
 
-resource "azurerm_user_assigned_identity" "cyral_assigned_identity" {
+resource "azurerm_user_assigned_identity" "user_assigned_identity" {
   location            = azurerm_resource_group.resource_group.location
   name                = "${local.name_prefix}-user-assigned_identity"
   resource_group_name = azurerm_resource_group.resource_group.name
 }
 
 resource "azurerm_role_assignment" "role_assignment" {
-  scope                = azurerm_linux_virtual_machine_scale_set.cyral_sidecar_asg.id
+  scope                = azurerm_linux_virtual_machine_scale_set.scale_set.id
   role_definition_name = "Contributor"
-  principal_id         = azurerm_user_assigned_identity.cyral_assigned_identity.principal_id
+  principal_id         = azurerm_user_assigned_identity.user_assigned_identity.principal_id
 }
 
-resource "azurerm_linux_virtual_machine_scale_set" "cyral_sidecar_asg" {
+resource "azurerm_linux_virtual_machine_scale_set" "scale_set" {
   name                            = "${local.name_prefix}-machine-scale-set"
   resource_group_name             = azurerm_resource_group.resource_group.name
   location                        = azurerm_resource_group.resource_group.location
@@ -175,7 +175,7 @@ resource "azurerm_linux_virtual_machine_scale_set" "cyral_sidecar_asg" {
     #     name                                   = "subnet"
     #     primary                                = true
     #     subnet_id                              = ip_configuration.value
-    #     load_balancer_backend_address_pool_ids = [azurerm_lb_backend_address_pool.bpepool.id]
+    #     load_balancer_backend_address_pool_ids = [azurerm_lb_backend_address_pool.lb_backend_address_pool.id]
     #     public_ip_address {
     #       name = "public_ip"
     #     }
@@ -185,7 +185,7 @@ resource "azurerm_linux_virtual_machine_scale_set" "cyral_sidecar_asg" {
       name                                   = "subnet"
       primary                                = true
       subnet_id                              = var.subnets[0]
-      load_balancer_backend_address_pool_ids = [azurerm_lb_backend_address_pool.bpepool[0].id]
+      load_balancer_backend_address_pool_ids = [azurerm_lb_backend_address_pool.lb_backend_address_pool[0].id]
       public_ip_address {
         name = "public_ip"
       }
@@ -194,7 +194,7 @@ resource "azurerm_linux_virtual_machine_scale_set" "cyral_sidecar_asg" {
 
   identity {
     type         = "UserAssigned"
-    identity_ids = [azurerm_user_assigned_identity.cyral_assigned_identity.id]
+    identity_ids = [azurerm_user_assigned_identity.user_assigned_identity.id]
   }
 }
 
@@ -203,7 +203,7 @@ resource "azurerm_monitor_autoscale_setting" "monitor_autoscale_setting" {
   name                = "${local.name_prefix}-monitor-autoscale-setting"
   resource_group_name = azurerm_resource_group.resource_group.name
   location            = azurerm_resource_group.resource_group.location
-  target_resource_id  = azurerm_linux_virtual_machine_scale_set.cyral_sidecar_asg.id
+  target_resource_id  = azurerm_linux_virtual_machine_scale_set.scale_set.id
 
   profile {
     name = "defaultProfile"

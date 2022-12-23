@@ -37,8 +37,8 @@ resource "azurerm_key_vault" "key_vault" {
   }
 
   access_policy {
-    tenant_id = azurerm_user_assigned_identity.cyral_assigned_identity.tenant_id
-    object_id = azurerm_user_assigned_identity.cyral_assigned_identity.principal_id
+    tenant_id = azurerm_user_assigned_identity.user_assigned_identity.tenant_id
+    object_id = azurerm_user_assigned_identity.user_assigned_identity.principal_id
 
     secret_permissions = [
       "Set",
