@@ -13,6 +13,7 @@ variable "container_registry_key" {
   description = "Key provided by Cyral for authenticating on Cyral's container registry"
   type        = string
   default     = ""
+  sensitive   = true
 }
 
 variable "client_id" {
@@ -23,6 +24,7 @@ variable "client_id" {
 variable "client_secret" {
   description = "The client secret assigned to the sidecar"
   type        = string
+  sensitive   = true
 }
 
 variable "control_plane" {
