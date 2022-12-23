@@ -12,7 +12,7 @@ resource "azurerm_log_analytics_workspace" "log_analytics_workspace" {
   retention_in_days   = 30
 }
 
-resource "azurerm_public_ip" "public-ip" {
+resource "azurerm_public_ip" "public_ip" {
   count               = var.public_load_balancer ? 1 : 0
   name                = "${local.name_prefix}-public-ip"
   location            = azurerm_resource_group.resource_group.location
@@ -33,7 +33,7 @@ resource "azurerm_lb" "lb" {
     for_each = var.public_load_balancer ? [1] : []
     content {
       name                 = "${local.name_prefix}_${var.frontend_ip_config_name}"
-      public_ip_address_id = azurerm_public_ip.public-ip[0].id
+      public_ip_address_id = azurerm_public_ip.public_ip[0].id
     }
   }
 
