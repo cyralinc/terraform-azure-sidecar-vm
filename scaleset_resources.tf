@@ -199,11 +199,11 @@ resource "azurerm_linux_virtual_machine_scale_set" "scale_set" {
 }
 
 resource "azurerm_monitor_autoscale_setting" "monitor_autoscale_setting" {
-  count               = var.auto_scale_count
   name                = "${local.name_prefix}-monitor-autoscale-setting"
   resource_group_name = azurerm_resource_group.resource_group.name
   location            = azurerm_resource_group.resource_group.location
   target_resource_id  = azurerm_linux_virtual_machine_scale_set.scale_set.id
+  enabled =  var.auto_scale_enabled
 
   profile {
     name = "defaultProfile"

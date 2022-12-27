@@ -13,10 +13,10 @@ variable "resource_group_location" {
   description = "Azure resource group location"
 }
 
-variable "auto_scale_count" {
-  description = "Set to 1 to enable the auto scale setting, 0 to disable. Only for debugging."
-  type        = number
-  default     = 1
+variable "auto_scale_enabled" {
+  description = "Set true to enable the auto scale setting, false to disable. Only for debugging."
+  type        = bool
+  default     = true
 }
 
 variable "auto_scale_min" {
