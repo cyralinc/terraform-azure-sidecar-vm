@@ -93,7 +93,7 @@ variable "mysql_multiplexed_port" {
 }
 
 variable "name_prefix" {
-  description = "Prefix for names of created resources in AWS. Maximum length is 24 characters."
+  description = "Prefix for names of created resources in AWS. Maximum length is 24 characters"
   type        = string
   default     = ""
 }
@@ -104,7 +104,7 @@ variable "sidecar_id" {
 }
 
 variable "sidecar_ports" {
-  description = "List of ports allowed to connect to the sidecar."
+  description = "List of ports allowed to connect to the sidecar"
   type        = list(number)
 }
 
