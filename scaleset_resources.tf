@@ -1,5 +1,10 @@
 data "azurerm_client_config" "current" {}
 
+locals {
+  subnets_and_ports       = setproduct(var.subnets, var.sidecar_ports)
+  frontend_ip_config_name = "lb-frontend-ip"
+}
+
 resource "azurerm_resource_group" "resource_group" {
   name     = var.resource_group_name == "" ? "${local.name_prefix}" : var.resource_group_name
   location = var.resource_group_location
@@ -32,7 +37,7 @@ resource "azurerm_lb" "lb" {
   dynamic "frontend_ip_configuration" {
     for_each = var.public_load_balancer ? [1] : []
     content {
-      name                 = "${local.name_prefix}_${var.frontend_ip_config_name}"
+      name                 = "${local.name_prefix}_${local.frontend_ip_config_name}"
       public_ip_address_id = azurerm_public_ip.public_ip[0].id
     }
   }
@@ -40,7 +45,7 @@ resource "azurerm_lb" "lb" {
   dynamic "frontend_ip_configuration" {
     for_each = var.public_load_balancer ? [] : var.subnets
     content {
-      name                          = format("${local.name_prefix}_${var.frontend_ip_config_name}_%s", index(var.subnets, frontend_ip_configuration.value))
+      name                          = format("${local.name_prefix}_${local.frontend_ip_config_name}_%s", index(var.subnets, frontend_ip_configuration.value))
       subnet_id                     = frontend_ip_configuration.value
       private_ip_address_allocation = "Dynamic"
       private_ip_address_version    = "IPv4"
@@ -63,17 +68,13 @@ resource "azurerm_lb_probe" "lb_probe" {
   interval_in_seconds = 5
 }
 
-locals {
-  subnets_and_ports = setproduct(var.subnets, var.sidecar_ports)
-}
-
 resource "azurerm_lb_rule" "lb_rule" {
   loadbalancer_id                = azurerm_lb.lb.id
   name                           = var.public_load_balancer ? "${local.name_prefix}-tg${element(var.sidecar_ports, count.index)}" : "${local.name_prefix}-tg${local.subnets_and_ports[count.index][1]}_${count.index}"
   protocol                       = "Tcp"
   frontend_port                  = var.public_load_balancer ? element(var.sidecar_ports, count.index) : local.subnets_and_ports[count.index][1]
   backend_port                   = var.public_load_balancer ? element(var.sidecar_ports, count.index) : local.subnets_and_ports[count.index][1]
-  frontend_ip_configuration_name = var.public_load_balancer ? "${local.name_prefix}_${var.frontend_ip_config_name}" : format("${local.name_prefix}_${var.frontend_ip_config_name}_%s", index(var.subnets, local.subnets_and_ports[count.index][0]))
+  frontend_ip_configuration_name = var.public_load_balancer ? "${local.name_prefix}_${local.frontend_ip_config_name}" : format("${local.name_prefix}_${local.frontend_ip_config_name}_%s", index(var.subnets, local.subnets_and_ports[count.index][0]))
   probe_id                       = azurerm_lb_probe.lb_probe.id
   backend_address_pool_ids       = var.public_load_balancer ? [azurerm_lb_backend_address_pool.lb_backend_address_pool[0].id] : [azurerm_lb_backend_address_pool.lb_backend_address_pool[index(var.subnets, local.subnets_and_ports[count.index][0])].id]
   count                          = var.public_load_balancer ? length(var.sidecar_ports) : length(local.subnets_and_ports)
@@ -169,18 +170,6 @@ resource "azurerm_linux_virtual_machine_scale_set" "scale_set" {
     name    = "${local.name_prefix}-network-interface"
     primary = true
 
-    # dynamic "ip_configuration" {
-    #   for_each = var.subnets
-    #   content {
-    #     name                                   = "subnet"
-    #     primary                                = true
-    #     subnet_id                              = ip_configuration.value
-    #     load_balancer_backend_address_pool_ids = [azurerm_lb_backend_address_pool.lb_backend_address_pool.id]
-    #     public_ip_address {
-    #       name = "public_ip"
-    #     }
-    #   }
-    # }
     ip_configuration {
       name                                   = "subnet"
       primary                                = true
@@ -203,7 +192,7 @@ resource "azurerm_monitor_autoscale_setting" "monitor_autoscale_setting" {
   resource_group_name = azurerm_resource_group.resource_group.name
   location            = azurerm_resource_group.resource_group.location
   target_resource_id  = azurerm_linux_virtual_machine_scale_set.scale_set.id
-  enabled =  var.auto_scale_enabled
+  enabled             = var.auto_scale_enabled
 
   profile {
     name = "defaultProfile"

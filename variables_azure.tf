@@ -96,9 +96,3 @@ variable "subnets" {
   description = "Subnets to add sidecar to (list of string)."
   type        = list(string)
 }
-
-variable "frontend_ip_config_name" {
-  description = "Load balance frontend ip configuration name."
-  type        = string
-  default     = "load_balance_frontend_ip"
-}
