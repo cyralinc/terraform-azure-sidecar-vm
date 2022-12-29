@@ -76,8 +76,9 @@ variable "instance_os_disk_storage_account_type" {
 }
 
 variable "secrets_location" {
-  description = "Location in AWS Secrets Manager to store client_id, client_secret and container_registry_key."
+  description = "Location in Azure Key Vault to store client_id, client_secret and container_registry_key."
   type        = string
+  default     = ""
 }
 
 variable "admin_public_key" {
