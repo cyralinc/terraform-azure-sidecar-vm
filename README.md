@@ -15,23 +15,30 @@ provider "azurerm" {
 }
 
 module "cyral_sidecar" {
+  source = "cyralinc/sidecar-vm/azure"
+  version = "~> 0.0" # terraform module version
+  
   sidecar_version = ""
-  source = ""
+  sidecar_id      = ""
 
-  client_id     = ""
-  client_secret  = ""
+  control_plane   = ""
+
+  sidecar_ports = [443, 3306, 5432]
+  # If `repositories_supported` is ommitted, all repositories will be supported,
+  # though you have to open the desired ports using `sidecar_ports`.
+
+  subnets = []
+
   container_registry_key      = ""
   container_registry          = ""
   container_registry_username = ""
-  sidecar_id                  = ""
-  control_plane               = ""
-  secrets_location            = ""  
-  resource_group_location = ""  
+
+  client_id         = ""
+  client_secret     = ""
+  secrets_location  = ""  
+
+  resource_group_location     = ""  
   admin_public_key            = ""
-  subnets = []
-  log_integration = "azure-log-analytics"
-  repositories_supported = []
-  sidecar_ports = []
 }
 ```
 **Note:**
@@ -125,7 +132,7 @@ module "cyral_sidecar" {
 | <a name="input_name_prefix"></a> [name\_prefix](#input\_name\_prefix) | Prefix for names of created resources in AWS. Maximum length is 24 characters. | `string` | `""` | no |
 | <a name="input_sidecar_id"></a> [sidecar\_id](#input\_sidecar\_id) | Sidecar identifier | `string` | n/a | yes |
 | <a name="input_sidecar_ports"></a> [sidecar\_ports](#input\_sidecar\_ports) | List of ports allowed to connect to the sidecar. See also 'load\_balancer\_tls\_ports'. | `list(number)` | n/a | yes |
-| <a name="input_sidecar_version"></a> [sidecar\_version](#input\_sidecar\_version) | Version of the sidecar | `string` | n/a | yes |
+| <a name="input_version"></a> [version](#input\_version) | Version of the sidecar | `string` | n/a | yes |
 | <a name="input_repositories_supported"></a> [repositories\_supported](#input\_repositories\_supported) | List of all repositories that will be supported by the sidecar (lower case only) | `list(string)` | <pre>[<br>  "denodo",<br>  "dremio",<br>  "dynamodb",<br>  "mongodb",<br>  "mysql",<br>  "oracle",<br>  "postgresql",<br>  "redshift",<br>  "snowflake",<br>  "sqlserver",<br>  "s3"<br>]</pre> | no |
 | <a name="input_custom_user_data"></a> [custom\_user\_data](#input\_custom\_user\_data) | Ancillary consumer supplied user-data script. Bash scripts must be added to a map as a value of the key `pre` and/or `post` denoting execution order with respect to sidecar installation. (Approx Input Size = 19KB) | `map(any)` | <pre>{<br>  "post": "",<br>  "pre": ""<br>}</pre> | no |
 
