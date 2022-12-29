@@ -62,36 +62,6 @@ variable "log_integration" {
   default     = "azure-log-analytics"
 }
 
-variable "mongodb_port_alloc_range_low" {
-  description = <<EOF
-Initial value for MongoDB port allocation range. This is mandatory for MongoDB
-use case and the consecutive ports in the
-range `mongodb_port_alloc_range_low:mongodb_port_alloc_range_high` will be used
-for mongodb cluster monitoring. All the ports in this range must be listed in
-`sidecar_ports`.
-EOF
-  type        = number
-  default     = 27017
-}
-
-variable "mongodb_port_alloc_range_high" {
-  description = <<EOF
-Final value for MongoDB port allocation range. This is mandatory for MongoDB
-use case and the consecutive ports in the
-range `mongodb_port_alloc_range_low:mongodb_port_alloc_range_high` will be used
-for mongodb cluster monitoring. All the ports in this range must be listed in
-`sidecar_ports`.
-EOF
-  type        = number
-  default     = 27019
-}
-
-variable "mysql_multiplexed_port" {
-  description = "Port that will be used by the sidecar to multiplex connections to MySQL"
-  type        = number
-  default     = 0
-}
-
 variable "name_prefix" {
   description = "Prefix for names of created resources in AWS. Maximum length is 24 characters"
   type        = string
