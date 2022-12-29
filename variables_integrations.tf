@@ -3,7 +3,7 @@
 # ################################
 
 variable "dd_api_key" {
-  description = "API key to connect to DataDog"
+  description = "API key to connect to DataDog."
   type        = string
   default     = ""
 }
@@ -13,19 +13,19 @@ variable "dd_api_key" {
 # ################################
 
 variable "elk_address" {
-  description = "Address to ship logs to ELK"
+  description = "Address to ship logs to ELK."
   type        = string
   default     = ""
 }
 
 variable "elk_username" {
-  description = "(Optional) Username to use to ship logs to ELK"
+  description = "(Optional) Username to use to ship logs to ELK."
   type        = string
   default     = ""
 }
 
 variable "elk_password" {
-  description = "(Optional) Password to use to ship logs to ELK"
+  description = "(Optional) Password to use to ship logs to ELK."
   type        = string
   default     = ""
   sensitive   = true
@@ -36,31 +36,31 @@ variable "elk_password" {
 # ################################
 
 variable "splunk_index" {
-  description = "Splunk index"
+  description = "Splunk index."
   type        = string
   default     = ""
 }
 
 variable "splunk_host" {
-  description = "Splunk host"
+  description = "Splunk host."
   type        = string
   default     = ""
 }
 
 variable "splunk_port" {
-  description = "Splunk port"
+  description = "Splunk port."
   type        = number
   default     = 0
 }
 
 variable "splunk_tls" {
-  description = "Splunk TLS"
+  description = "Splunk TLS."
   type        = bool
   default     = false
 }
 
 variable "splunk_token" {
-  description = "Splunk token"
+  description = "Splunk token."
   type        = string
   default     = ""
   sensitive   = true
@@ -71,13 +71,13 @@ variable "splunk_token" {
 # ################################
 
 variable "sumologic_host" {
-  description = "Sumologic host"
+  description = "Sumologic host."
   type        = string
   default     = ""
 }
 
 variable "sumologic_uri" {
-  description = "Sumologic uri"
+  description = "Sumologic uri."
   type        = string
   default     = ""
 }
@@ -87,7 +87,7 @@ variable "sumologic_uri" {
 ################################
 
 variable "hc_vault_integration_id" {
-  description = "HashiCorp Vault integration ID"
+  description = "HashiCorp Vault integration ID."
   type        = string
   default     = ""
 }
