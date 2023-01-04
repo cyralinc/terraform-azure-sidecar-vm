@@ -35,7 +35,6 @@ module "cyral_sidecar" {
 
   client_id         = ""
   client_secret     = ""
-  secrets_location  = ""  
 
   resource_group_location     = ""  
   admin_public_key            = ""
@@ -101,7 +100,8 @@ module "cyral_sidecar" {
 | <a name="input_source_image_sku"></a> [instance\_source\_image\_sku](#input\_source\_image\_sku) | Specifies the SKU of the image used to create the virtual machines | `string` | `"22_04-lts"` | no |
 | <a name="input_source_image_version"></a> [instance\_source\_image\_version](#input\_source\_image\_version) | Specifies the version of the image used to create the virtual machines | `string` | `"latest"` | no |
 | <a name="input_instance_os_disk_storage_account_type"></a> [instance\_instance\_os\_disk\_storage\_account\_type](#input\_instance\_os\_disk\_storage\_account\_type) | The Type of Storage Account which should back this Data Disk | `string` | `"Standard_LRS"` | no |
-| <a name="input_secrets_location"></a> [secrets\_location](#input\_secrets\_location) | Location in AWS Secrets Manager to store client_id, client_secret and container_registry_key | `string` | n/a | yes |
+| <a name="input_key_vault_name"></a> [secret\_key\_vault\_name](#input\_key\_vault\_name) | Location in Azure Key Vault to store secrets | `string` | `""` | no |
+| <a name="input_secret_name"></a> [secret\_name](#input\_secret\_name) | Location in Azure Key Vault to store client_id, client_secret and container_registry_key | `string` | `""` | no |
 | <a name="input_admin_public_key"></a> [admin\_public\_key](#input\_admin\_public\_key) | The Public Key which should be used for authentication, which needs to be at least 2048-bit and in ssh-rsa format | `string` | n/a | yes |
 | <a name="input_public_load_balancer"></a> [public\_load\_balancer](#input\_public\_load\_balancer) | Set true to add a public IP to the load balancer | `bool` | `false` | no |
 | <a name="input_subnets"></a> [subnets](#input\_subnets) | Subnets to add sidecar to (list of string) | `list(string)` | n/a | no |
@@ -126,7 +126,7 @@ module "cyral_sidecar" {
 | <a name="input_control_plane"></a> [control\_plane](#input\_control\_plane) | Address of the control plane - <tenant>.cyral.com | `string` | n/a | yes |
 | <a name="input_external_tls_type"></a> [external\_tls\_type](#input\_external\_tls\_type) | TLS mode for the control plane - tls, tls-skip-verify, no-tls | `string` | `"tls"` | no |
 | <a name="input_iam_policies"></a> [iam\_policies](#input\_iam\_policies) | (Optional) List of IAM policies ARNs that will be attached to the sidecar IAM role | `list(string)` | `[]` | no |
-| <a name="input_secret_manager_type"></a> [secret\_manager\_type](#input\_secret\_manager\_type) | (Optional) List of IAM policies ARNs that will be attached to the sidecar IAM role | `list(string)` | `[]` | no |
+| <a name="input_secret_manager_type"></a> [secret\_manager\_type](#input\_secret\_manager\_type) | Define secret manager type for sidecar_client_id and sidecar_client_secret. | `string` | `"azure-key-vault"` | no |
 | <a name="input_metrics_integration"></a> [metrics\_integration](#input\_metrics\_integration) | Metrics destination | `string` | `""` | no |
 | <a name="input_log_integration"></a> [log\_integration](#input\_log\_integration) | Logs destination | `string` | `"azure-log-analytics"` | no |
 | <a name="input_name_prefix"></a> [name\_prefix](#input\_name\_prefix) | Prefix for names of created resources in AWS. Maximum length is 24 characters. | `string` | `""` | no |

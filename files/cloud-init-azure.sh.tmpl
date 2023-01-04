@@ -73,7 +73,7 @@ mkdir -p /home/${vm_username}/cyral/
 curl -sL https://aka.ms/InstallAzureCLIDeb | sudo bash
 
 az login --identity
-secret_data=$(az keyvault secret show --vault-name ${key_vault_name} --name ${secrets_location} --query value -o tsv)
+secret_data=$(az keyvault secret show --vault-name ${key_vault_name} --name ${secret_name} --query value -o tsv)
 export SIDECAR_CLIENT_ID=$(echo "$secret_data" | jq -r .clientId)
 export SIDECAR_CLIENT_SECRET=$(echo "$secret_data" | jq -r .clientSecret)
 export WORKSPACE_ID=$(echo "$secret_data" | jq -r .workspaceId)
@@ -88,7 +88,6 @@ CONTAINER_REGISTRY=${container_registry}
 LOG_INTEGRATION=${log_integration}
 METRICS_INTEGRATION=${metrics_integration}
 HCVAULT_INTEGRATION_ID=${hc_vault_integration_id}
-SECRETS_LOCATION=${secrets_location}
 INSTANCE_ID=$INSTANCE_ID
 SIDECAR_CLIENT_ID=$SIDECAR_CLIENT_ID
 SIDECAR_CLIENT_SECRET=$SIDECAR_CLIENT_SECRET
@@ -128,7 +127,7 @@ declare -f get_token
 declare -f download_sidecar
 retry download_sidecar
 
-az keyvault secret show --vault-name ${key_vault_name} --name ${secrets_location} --query value -o tsv | jq -r .containerRegistryKey | base64 --decode > /home/${vm_username}/cyral/container_registry_key.json
+az keyvault secret show --vault-name ${key_vault_name} --name ${secret_name} --query value -o tsv | jq -r .containerRegistryKey | base64 --decode > /home/${vm_username}/cyral/container_registry_key.json
 
 function login () {  
   if [ -s /home/${vm_username}/cyral/container_registry_key.json ]; then

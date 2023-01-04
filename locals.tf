@@ -1,9 +1,11 @@
 locals {
   sidecar_endpoint = var.public_load_balancer ? azurerm_public_ip.public_ip[0].fqdn : ""
 
-  protocol    = var.external_tls_type == "no-tls" ? "http" : "https"
-  curl        = var.external_tls_type == "tls-skip-verify" ? "curl -k" : "curl"
-  name_prefix = var.name_prefix == "" ? "cyral-${substr(lower(var.sidecar_id), -6, -1)}" : var.name_prefix
+  protocol       = var.external_tls_type == "no-tls" ? "http" : "https"
+  curl           = var.external_tls_type == "tls-skip-verify" ? "curl -k" : "curl"
+  name_prefix    = var.name_prefix == "" ? "cyral-${substr(lower(var.sidecar_id), -6, -1)}" : var.name_prefix
+  secret_name    = var.secret_name == "" ? "cyral-sidecars-${var.sidecar_id}-secrets" : var.secret_name
+  key_vault_name = var.key_vault_name == "" ? "${local.name_prefix}-kv" : var.key_vault_name
 
   templatevars = {
     sidecar_id                  = var.sidecar_id
@@ -12,8 +14,8 @@ locals {
     container_registry          = var.container_registry
     container_registry_username = var.container_registry_username
     log_integration             = var.log_integration
-    secrets_location            = var.secrets_location
-    key_vault_name              = azurerm_key_vault.key_vault.name
+    key_vault_name              = local.key_vault_name
+    secret_name                 = local.secret_name
     metrics_integration         = var.metrics_integration
     hc_vault_integration_id     = var.hc_vault_integration_id
     curl                        = local.curl

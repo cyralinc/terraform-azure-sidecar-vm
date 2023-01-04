@@ -12,7 +12,7 @@ locals {
 }
 
 resource "azurerm_key_vault" "key_vault" {
-  name                        = "${local.name_prefix}-kv"
+  name                        = local.key_vault_name
   location                    = azurerm_resource_group.resource_group.location
   resource_group_name         = azurerm_resource_group.resource_group.name
   enabled_for_disk_encryption = true
@@ -31,8 +31,6 @@ resource "azurerm_key_vault" "key_vault" {
       "Get",
       "Delete",
       "Purge",
-      "List",
-      "Recover",
     ]
   }
 
@@ -43,16 +41,12 @@ resource "azurerm_key_vault" "key_vault" {
     secret_permissions = [
       "Set",
       "Get",
-      "Delete",
-      "Purge",
-      "List",
-      "Recover",
     ]
   }
 }
 
 resource "azurerm_key_vault_secret" "key_vault_secret" {
-  name         = "cyral-sidecars-${var.sidecar_id}-self-signed-certificate"
+  name         = local.secret_name
   value        = jsonencode(local.sidecar_secrets)
   key_vault_id = azurerm_key_vault.key_vault.id
 }

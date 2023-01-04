@@ -75,7 +75,13 @@ variable "instance_os_disk_storage_account_type" {
   default     = "Standard_LRS"
 }
 
-variable "secrets_location" {
+variable "key_vault_name" {
+  description = "Location in Azure Key Vault to store secrets."
+  type        = string
+  default     = ""
+}
+
+variable "secret_name" {
   description = "Location in Azure Key Vault to store client_id, client_secret and container_registry_key."
   type        = string
   default     = ""
