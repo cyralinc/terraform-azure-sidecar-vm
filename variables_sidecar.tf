@@ -44,6 +44,18 @@ variable "iam_policies" {
   default     = []
 }
 
+variable "iam_actions_role_permissions" {
+  description = "(Optional) List of IAM role actions permissions that will be attached to the sidecar IAM role."
+  type        = list(string)
+  default     = []
+}
+
+variable "iam_no_actions_role_permissions" {
+  description = "(Optional) List of IAM role disallowed actions permissions that will be attached to the sidecar IAM role."
+  type        = list(string)
+  default     = []
+}
+
 variable "secret_manager_type" {
   description = "Define secret manager type for sidecar_client_id and sidecar_client_secret."
   type        = string

@@ -126,6 +126,8 @@ module "cyral_sidecar" {
 | <a name="input_control_plane"></a> [control\_plane](#input\_control\_plane) | Address of the control plane - <tenant>.cyral.com | `string` | n/a | yes |
 | <a name="input_external_tls_type"></a> [external\_tls\_type](#input\_external\_tls\_type) | TLS mode for the control plane - tls, tls-skip-verify, no-tls | `string` | `"tls"` | no |
 | <a name="input_iam_policies"></a> [iam\_policies](#input\_iam\_policies) | (Optional) List of IAM policies ARNs that will be attached to the sidecar IAM role | `list(string)` | `[]` | no |
+| <a name="input_iam_actions_role_permissions"></a> [iam\_actions\_role\_permissions](#input\_iam\_actions\_role\_permissions) | (Optional) List of IAM role actions permissions that will be attached to the sidecar IAM role. | `list(string)` | `[]` | no |
+| <a name="iam_no_actions_role_permissions"></a> [iam\_no\_actions\_role\_permissions](#input\_iam\_no\_actions\_role\_permissions) | (Optional) List of IAM role disallowed actions permissions that will be attached to the sidecar IAM role. | `list(string)` | `[]` | no |
 | <a name="input_secret_manager_type"></a> [secret\_manager\_type](#input\_secret\_manager\_type) | Define secret manager type for sidecar_client_id and sidecar_client_secret. | `string` | `"azure-key-vault"` | no |
 | <a name="input_metrics_integration"></a> [metrics\_integration](#input\_metrics\_integration) | Metrics destination | `string` | `""` | no |
 | <a name="input_log_integration"></a> [log\_integration](#input\_log\_integration) | Logs destination | `string` | `"azure-log-analytics"` | no |

@@ -3,6 +3,11 @@ resource "azurerm_role_definition" "role_definition" {
   scope       = azurerm_resource_group.resource_group.id
   description = "Sidecar custom role created via Terraform"
 
+  permissions {
+    actions     = var.iam_actions_role_permissions
+    not_actions = var.iam_no_actions_role_permissions
+  }
+
   assignable_scopes = [
     azurerm_resource_group.resource_group.id,
   ]
