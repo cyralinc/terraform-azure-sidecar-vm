@@ -166,17 +166,21 @@ resource "azurerm_linux_virtual_machine_scale_set" "scale_set" {
     caching              = "ReadWrite"
   }
 
-  network_interface {
-    name    = "${local.name_prefix}-network-interface"
-    primary = true
+  dynamic "network_interface" {
+    for_each = var.subnets
+    content {
+      name    = format("${local.name_prefix}-network-interface_%s", index(var.subnets, network_interface.value))
+      primary = index(var.subnets, network_interface.value) == 0 ? true : false
 
-    ip_configuration {
-      name                                   = "subnet"
-      primary                                = true
-      subnet_id                              = var.subnets[0]
-      load_balancer_backend_address_pool_ids = [azurerm_lb_backend_address_pool.lb_backend_address_pool[0].id]
-      public_ip_address {
-        name = "public_ip"
+      ip_configuration {
+        name                                   = format("${local.name_prefix}_subnet_%s", index(var.subnets, network_interface.value))
+        primary                                = index(var.subnets, network_interface.value) == 0 ? true : false
+        subnet_id                              = network_interface.value
+        load_balancer_backend_address_pool_ids = [azurerm_lb_backend_address_pool.lb_backend_address_pool[index(var.subnets, network_interface.value)].id]
+
+        public_ip_address {
+          name = "public_ip"
+        }
       }
     }
   }
