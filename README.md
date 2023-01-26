@@ -1,9 +1,10 @@
 # Cyral Sidecar Azure module for Terraform
 
 ## Usage
-### Minimal configuration:
 
-```
+### Minimal configuration
+
+```hcl
 provider "azurerm" {
   # This feature is to immediately destroy secrets when `terraform destroy`
   # is executed. We advise you to remove it for production sidecars.
@@ -40,6 +41,7 @@ module "cyral_sidecar" {
   admin_public_key            = ""
 }
 ```
+
 **Note:**
 
 - `name_prefix` is defined automatically. If you wish to define a custom
@@ -93,55 +95,55 @@ No modules.
 
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
-| <a name="input_admin_public_key"></a> [admin\_public\_key](#input\_admin\_public\_key) | The Public Key which should be used for authentication, which needs to be at least 2048-bit and in ssh-rsa format. | `string` | n/a | yes |
-| <a name="input_auto_scale_default"></a> [auto\_scale\_default](#input\_auto\_scale\_default) | The number of instances that are available for scaling if metrics are not available for evaluation. The default is only used if the current instance count is lower than the default. Valid values are between 0 and 1000. | `number` | `1` | no |
-| <a name="input_auto_scale_enabled"></a> [auto\_scale\_enabled](#input\_auto\_scale\_enabled) | Set true to enable the auto scale setting, false to disable. Only for debugging. | `bool` | `true` | no |
-| <a name="input_auto_scale_max"></a> [auto\_scale\_max](#input\_auto\_scale\_max) | The maximum number of instances for this resource. Valid values are between 0 and 1000. | `number` | `2` | no |
-| <a name="input_auto_scale_min"></a> [auto\_scale\_min](#input\_auto\_scale\_min) | The minimum number of instances for this resource. Valid values are between 0 and 1000. | `number` | `1` | no |
-| <a name="input_client_id"></a> [client\_id](#input\_client\_id) | The client id assigned to the sidecar. | `string` | n/a | yes |
-| <a name="input_client_secret"></a> [client\_secret](#input\_client\_secret) | The client secret assigned to the sidecar. | `string` | n/a | yes |
-| <a name="input_container_registry"></a> [container\_registry](#input\_container\_registry) | Address of the container registry where Cyral images are stored. | `string` | n/a | yes |
-| <a name="input_container_registry_key"></a> [container\_registry\_key](#input\_container\_registry\_key) | Key provided by Cyral for authenticating on Cyral's container registry. | `string` | `""` | no |
-| <a name="input_container_registry_username"></a> [container\_registry\_username](#input\_container\_registry\_username) | Username provided by Cyral for authenticating on Cyral's container registry. | `string` | `""` | no |
-| <a name="input_control_plane"></a> [control\_plane](#input\_control\_plane) | Address of the control plane - <tenant>.app.cyral.com. | `string` | n/a | yes |
-| <a name="input_custom_user_data"></a> [custom\_user\_data](#input\_custom\_user\_data) | Ancillary consumer supplied user-data script. Bash scripts must be added to a map as a value of the key `pre` and/or `post` denoting execution order with respect to sidecar installation. (Approx Input Size = 19KB). | `map(any)` | <pre>{<br>  "post": "",<br>  "pre": ""<br>}</pre> | no |
-| <a name="input_dd_api_key"></a> [dd\_api\_key](#input\_dd\_api\_key) | API key to connect to DataDog. | `string` | `""` | no |
-| <a name="input_elk_address"></a> [elk\_address](#input\_elk\_address) | Address to ship logs to ELK. | `string` | `""` | no |
-| <a name="input_elk_password"></a> [elk\_password](#input\_elk\_password) | (Optional) Password to use to ship logs to ELK. | `string` | `""` | no |
-| <a name="input_elk_username"></a> [elk\_username](#input\_elk\_username) | (Optional) Username to use to ship logs to ELK. | `string` | `""` | no |
-| <a name="input_external_tls_type"></a> [external\_tls\_type](#input\_external\_tls\_type) | TLS mode for the control plane - tls, tls-skip-verify, no-tls. | `string` | `"tls"` | no |
-| <a name="input_hc_vault_integration_id"></a> [hc\_vault\_integration\_id](#input\_hc\_vault\_integration\_id) | HashiCorp Vault integration ID. | `string` | `""` | no |
-| <a name="input_iam_actions_role_permissions"></a> [iam\_actions\_role\_permissions](#input\_iam\_actions\_role\_permissions) | (Optional) List of IAM role actions permissions that will be attached to the sidecar IAM role. | `list(string)` | `[]` | no |
-| <a name="input_iam_no_actions_role_permissions"></a> [iam\_no\_actions\_role\_permissions](#input\_iam\_no\_actions\_role\_permissions) | (Optional) List of IAM role disallowed actions permissions that will be attached to the sidecar IAM role. | `list(string)` | `[]` | no |
-| <a name="input_iam_policies"></a> [iam\_policies](#input\_iam\_policies) | (Optional) List of IAM policies that will be attached to the sidecar IAM role. | `list(string)` | `[]` | no |
-| <a name="input_instance_os_disk_storage_account_type"></a> [instance\_os\_disk\_storage\_account\_type](#input\_instance\_os\_disk\_storage\_account\_type) | The Type of Storage Account which should back this Data Disk. | `string` | `"Standard_LRS"` | no |
-| <a name="input_instance_type"></a> [instance\_type](#input\_instance\_type) | Azure virtual machine scale set instance type for the sidecar instances. | `string` | `"Standard_F2"` | no |
-| <a name="input_key_vault_name"></a> [key\_vault\_name](#input\_key\_vault\_name) | Location in Azure Key Vault to store secrets. | `string` | `""` | no |
-| <a name="input_log_integration"></a> [log\_integration](#input\_log\_integration) | Logs destination. | `string` | `"azure-log-analytics"` | no |
-| <a name="input_metrics_integration"></a> [metrics\_integration](#input\_metrics\_integration) | Metrics destination. | `string` | `""` | no |
-| <a name="input_name_prefix"></a> [name\_prefix](#input\_name\_prefix) | Prefix for names of created resources in AWS. Maximum length is 24 characters. | `string` | `""` | no |
-| <a name="input_public_load_balancer"></a> [public\_load\_balancer](#input\_public\_load\_balancer) | Set true to add a public IP to the load balancer. | `bool` | `false` | no |
-| <a name="input_repositories_supported"></a> [repositories\_supported](#input\_repositories\_supported) | List of all repositories that will be supported by the sidecar (lower case only). | `list(string)` | <pre>[<br>  "denodo",<br>  "dremio",<br>  "dynamodb",<br>  "mongodb",<br>  "mysql",<br>  "oracle",<br>  "postgresql",<br>  "redshift",<br>  "snowflake",<br>  "sqlserver",<br>  "s3"<br>]</pre> | no |
-| <a name="input_resource_group_location"></a> [resource\_group\_location](#input\_resource\_group\_location) | Azure resource group location. | `string` | n/a | yes |
-| <a name="input_resource_group_name"></a> [resource\_group\_name](#input\_resource\_group\_name) | Azure resource group name. | `string` | `""` | no |
-| <a name="input_secret_manager_type"></a> [secret\_manager\_type](#input\_secret\_manager\_type) | Define secret manager type for sidecar\_client\_id and sidecar\_client\_secret. | `string` | `"azure-key-vault"` | no |
-| <a name="input_secret_name"></a> [secret\_name](#input\_secret\_name) | Location in Azure Key Vault to store client\_id, client\_secret and container\_registry\_key. | `string` | `""` | no |
-| <a name="input_sidecar_id"></a> [sidecar\_id](#input\_sidecar\_id) | Sidecar identifier. | `string` | n/a | yes |
-| <a name="input_sidecar_ports"></a> [sidecar\_ports](#input\_sidecar\_ports) | List of ports allowed to connect to the sidecar. | `list(number)` | n/a | yes |
-| <a name="input_sidecar_version"></a> [sidecar\_version](#input\_sidecar\_version) | Version of the sidecar. | `string` | n/a | yes |
-| <a name="input_source_image_offer"></a> [source\_image\_offer](#input\_source\_image\_offer) | Specifies the offer of the image used to create the virtual machines. | `string` | `"0001-com-ubuntu-server-jammy"` | no |
-| <a name="input_source_image_publisher"></a> [source\_image\_publisher](#input\_source\_image\_publisher) | Specifies the publisher of the image used to create the virtual machines. | `string` | `"Canonical"` | no |
-| <a name="input_source_image_sku"></a> [source\_image\_sku](#input\_source\_image\_sku) | Specifies the SKU of the image used to create the virtual machines. | `string` | `"22_04-lts"` | no |
-| <a name="input_source_image_version"></a> [source\_image\_version](#input\_source\_image\_version) | Specifies the version of the image used to create the virtual machines. | `string` | `"latest"` | no |
-| <a name="input_splunk_host"></a> [splunk\_host](#input\_splunk\_host) | Splunk host. | `string` | `""` | no |
-| <a name="input_splunk_index"></a> [splunk\_index](#input\_splunk\_index) | Splunk index. | `string` | `""` | no |
-| <a name="input_splunk_port"></a> [splunk\_port](#input\_splunk\_port) | Splunk port. | `number` | `0` | no |
-| <a name="input_splunk_tls"></a> [splunk\_tls](#input\_splunk\_tls) | Splunk TLS. | `bool` | `false` | no |
-| <a name="input_splunk_token"></a> [splunk\_token](#input\_splunk\_token) | Splunk token. | `string` | `""` | no |
-| <a name="input_subnets"></a> [subnets](#input\_subnets) | Subnets to add sidecar to (list of string). | `list(string)` | n/a | yes |
-| <a name="input_sumologic_host"></a> [sumologic\_host](#input\_sumologic\_host) | Sumologic host. | `string` | `""` | no |
-| <a name="input_sumologic_uri"></a> [sumologic\_uri](#input\_sumologic\_uri) | Sumologic uri. | `string` | `""` | no |
-| <a name="input_vm_username"></a> [vm\_username](#input\_vm\_username) | Virtual machine user name. | `string` | `"ubuntu"` | no |
+| <a name="input_admin_public_key"></a> [admin\_public\_key](#input\_admin\_public\_key) | The Public Key which should be used for authentication, which needs to be at least 2048-bit and in ssh-rsa format | `string` | n/a | yes |
+| <a name="input_auto_scale_default"></a> [auto\_scale\_default](#input\_auto\_scale\_default) | The number of instances that are available for scaling if metrics are not available for evaluation. The default is only used if the current instance count is lower than the default. Valid values are between 0 and 1000 | `number` | `1` | no |
+| <a name="input_auto_scale_enabled"></a> [auto\_scale\_enabled](#input\_auto\_scale\_enabled) | Set true to enable the auto scale setting, false to disable. Only for debugging | `bool` | `true` | no |
+| <a name="input_auto_scale_max"></a> [auto\_scale\_max](#input\_auto\_scale\_max) | The maximum number of instances for this resource. Valid values are between 0 and 1000 | `number` | `2` | no |
+| <a name="input_auto_scale_min"></a> [auto\_scale\_min](#input\_auto\_scale\_min) | The minimum number of instances for this resource. Valid values are between 0 and 1000 | `number` | `1` | no |
+| <a name="input_client_id"></a> [client\_id](#input\_client\_id) | The client id assigned to the sidecar | `string` | n/a | yes |
+| <a name="input_client_secret"></a> [client\_secret](#input\_client\_secret) | The client secret assigned to the sidecar | `string` | n/a | yes |
+| <a name="input_container_registry"></a> [container\_registry](#input\_container\_registry) | Address of the container registry where Cyral images are stored | `string` | n/a | yes |
+| <a name="input_container_registry_key"></a> [container\_registry\_key](#input\_container\_registry\_key) | Key provided by Cyral for authenticating on Cyral's container registry | `string` | `""` | no |
+| <a name="input_container_registry_username"></a> [container\_registry\_username](#input\_container\_registry\_username) | Username provided by Cyral for authenticating on Cyral's container registry | `string` | `""` | no |
+| <a name="input_control_plane"></a> [control\_plane](#input\_control\_plane) | Address of the control plane - <tenant>.app.cyral.com | `string` | n/a | yes |
+| <a name="input_custom_user_data"></a> [custom\_user\_data](#input\_custom\_user\_data) | Ancillary consumer supplied user-data script. Bash scripts must be added to a map as a value of the key `pre` and/or `post` denoting execution order with respect to sidecar installation (Approx Input Size = 19KB) | `map(any)` | <pre>{<br>  "post": "",<br>  "pre": ""<br>}</pre> | no |
+| <a name="input_dd_api_key"></a> [dd\_api\_key](#input\_dd\_api\_key) | API key to connect to DataDog | `string` | `""` | no |
+| <a name="input_elk_address"></a> [elk\_address](#input\_elk\_address) | Address to ship logs to ELK | `string` | `""` | no |
+| <a name="input_elk_password"></a> [elk\_password](#input\_elk\_password) | (Optional) Password to use to ship logs to ELK | `string` | `""` | no |
+| <a name="input_elk_username"></a> [elk\_username](#input\_elk\_username) | (Optional) Username to use to ship logs to ELK | `string` | `""` | no |
+| <a name="input_external_tls_type"></a> [external\_tls\_type](#input\_external\_tls\_type) | TLS mode for the control plane - tls, tls-skip-verify, no-tls | `string` | `"tls"` | no |
+| <a name="input_hc_vault_integration_id"></a> [hc\_vault\_integration\_id](#input\_hc\_vault\_integration\_id) | HashiCorp Vault integration ID | `string` | `""` | no |
+| <a name="input_iam_actions_role_permissions"></a> [iam\_actions\_role\_permissions](#input\_iam\_actions\_role\_permissions) | (Optional) List of IAM role actions permissions that will be attached to the sidecar IAM role | `list(string)` | `[]` | no |
+| <a name="input_iam_no_actions_role_permissions"></a> [iam\_no\_actions\_role\_permissions](#input\_iam\_no\_actions\_role\_permissions) | (Optional) List of IAM role disallowed actions permissions that will be attached to the sidecar IAM role | `list(string)` | `[]` | no |
+| <a name="input_iam_policies"></a> [iam\_policies](#input\_iam\_policies) | (Optional) List of IAM policies that will be attached to the sidecar IAM role | `list(string)` | `[]` | no |
+| <a name="input_instance_os_disk_storage_account_type"></a> [instance\_os\_disk\_storage\_account\_type](#input\_instance\_os\_disk\_storage\_account\_type) | The Type of Storage Account which should back this Data Disk | `string` | `"Standard_LRS"` | no |
+| <a name="input_instance_type"></a> [instance\_type](#input\_instance\_type) | Azure virtual machine scale set instance type for the sidecar instances | `string` | `"Standard_F2"` | no |
+| <a name="input_key_vault_name"></a> [key\_vault\_name](#input\_key\_vault\_name) | Location in Azure Key Vault to store secrets | `string` | `""` | no |
+| <a name="input_log_integration"></a> [log\_integration](#input\_log\_integration) | Logs destination | `string` | `"azure-log-analytics"` | no |
+| <a name="input_metrics_integration"></a> [metrics\_integration](#input\_metrics\_integration) | Metrics destination | `string` | `""` | no |
+| <a name="input_name_prefix"></a> [name\_prefix](#input\_name\_prefix) | Prefix for names of created resources. Maximum length is 24 characters | `string` | `""` | no |
+| <a name="input_public_load_balancer"></a> [public\_load\_balancer](#input\_public\_load\_balancer) | Set true to add a public IP to the load balancer | `bool` | `false` | no |
+| <a name="input_repositories_supported"></a> [repositories\_supported](#input\_repositories\_supported) | List of all repositories that will be supported by the sidecar (lower case only) | `list(string)` | <pre>[<br>  "denodo",<br>  "dremio",<br>  "dynamodb",<br>  "mongodb",<br>  "mysql",<br>  "oracle",<br>  "postgresql",<br>  "redshift",<br>  "snowflake",<br>  "sqlserver",<br>  "s3"<br>]</pre> | no |
+| <a name="input_resource_group_location"></a> [resource\_group\_location](#input\_resource\_group\_location) | Azure resource group location | `string` | n/a | yes |
+| <a name="input_resource_group_name"></a> [resource\_group\_name](#input\_resource\_group\_name) | Azure resource group name | `string` | `""` | no |
+| <a name="input_secret_manager_type"></a> [secret\_manager\_type](#input\_secret\_manager\_type) | Define secret manager type for sidecar\_client\_id and sidecar\_client\_secret | `string` | `"azure-key-vault"` | no |
+| <a name="input_secret_name"></a> [secret\_name](#input\_secret\_name) | Location in Azure Key Vault to store client\_id, client\_secret and container\_registry\_key | `string` | `""` | no |
+| <a name="input_sidecar_id"></a> [sidecar\_id](#input\_sidecar\_id) | Sidecar identifier | `string` | n/a | yes |
+| <a name="input_sidecar_ports"></a> [sidecar\_ports](#input\_sidecar\_ports) | List of ports allowed to connect to the sidecar | `list(number)` | n/a | yes |
+| <a name="input_sidecar_version"></a> [sidecar\_version](#input\_sidecar\_version) | Version of the sidecar | `string` | n/a | yes |
+| <a name="input_source_image_offer"></a> [source\_image\_offer](#input\_source\_image\_offer) | Specifies the offer of the image used to create the virtual machines | `string` | `"0001-com-ubuntu-server-jammy"` | no |
+| <a name="input_source_image_publisher"></a> [source\_image\_publisher](#input\_source\_image\_publisher) | Specifies the publisher of the image used to create the virtual machines | `string` | `"Canonical"` | no |
+| <a name="input_source_image_sku"></a> [source\_image\_sku](#input\_source\_image\_sku) | Specifies the SKU of the image used to create the virtual machines | `string` | `"22_04-lts"` | no |
+| <a name="input_source_image_version"></a> [source\_image\_version](#input\_source\_image\_version) | Specifies the version of the image used to create the virtual machines | `string` | `"latest"` | no |
+| <a name="input_splunk_host"></a> [splunk\_host](#input\_splunk\_host) | Splunk host | `string` | `""` | no |
+| <a name="input_splunk_index"></a> [splunk\_index](#input\_splunk\_index) | Splunk index | `string` | `""` | no |
+| <a name="input_splunk_port"></a> [splunk\_port](#input\_splunk\_port) | Splunk port | `number` | `0` | no |
+| <a name="input_splunk_tls"></a> [splunk\_tls](#input\_splunk\_tls) | Splunk TLS | `bool` | `false` | no |
+| <a name="input_splunk_token"></a> [splunk\_token](#input\_splunk\_token) | Splunk token | `string` | `""` | no |
+| <a name="input_subnets"></a> [subnets](#input\_subnets) | Subnets to add sidecar to (list of string) | `list(string)` | n/a | yes |
+| <a name="input_sumologic_host"></a> [sumologic\_host](#input\_sumologic\_host) | Sumologic host | `string` | `""` | no |
+| <a name="input_sumologic_uri"></a> [sumologic\_uri](#input\_sumologic\_uri) | Sumologic uri | `string` | `""` | no |
+| <a name="input_vm_username"></a> [vm\_username](#input\_vm\_username) | Virtual machine user name | `string` | `"ubuntu"` | no |
 
 ## Outputs
 
