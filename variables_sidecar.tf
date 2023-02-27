@@ -74,6 +74,12 @@ variable "metrics_port" {
   type        = number
 }
 
+variable "metrics_source_address_prefixes" {
+  description = "Source address prefixes that will be able to reach the metrics port"
+  default     = {}
+  type        = set(string)
+}
+
 variable "log_integration" {
   description = "Logs destination"
   type        = string

@@ -100,6 +100,20 @@ resource "azurerm_network_security_rule" "security_rule_ssh" {
   network_security_group_name = azurerm_network_security_group.nsg.name
 }
 
+resource "azurerm_network_security_rule" "security_rule_metrics" {
+  resource_group_name         = azurerm_resource_group.resource_group.name
+  name                        = "${local.name_prefix}-nsr-metrics"
+  priority                    = 100
+  direction                   = "Inbound"
+  access                      = "Allow"
+  source_port_range           = "*"
+  protocol                    = "Tcp"
+  destination_port_range      = var.metrics_port
+  source_address_prefixes     = var.metrics_source_address_prefixes
+  destination_address_prefix  = "*"
+  network_security_group_name = azurerm_network_security_group.nsg.name
+}
+
 resource "azurerm_network_security_rule" "security_rule_sidecar_inbound" {
   resource_group_name         = azurerm_resource_group.resource_group.name
   name                        = "${local.name_prefix}-nsr-tg${element(var.sidecar_ports, count.index)}"
@@ -134,9 +148,12 @@ resource "azurerm_role_assignment" "role_assignment" {
 }
 
 resource "azurerm_linux_virtual_machine_scale_set" "scale_set" {
-  name                            = "${local.name_prefix}-machine-scale-set"
-  resource_group_name             = azurerm_resource_group.resource_group.name
-  location                        = azurerm_resource_group.resource_group.location
+  name                = "${local.name_prefix}-machine-scale-set"
+  resource_group_name = azurerm_resource_group.resource_group.name
+  location            = azurerm_resource_group.resource_group.location
+  tags = {
+    "MetricsPort" : var.metrics_port
+  }
   sku                             = var.instance_type
   admin_username                  = var.vm_username
   disable_password_authentication = true
