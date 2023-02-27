@@ -68,6 +68,12 @@ variable "metrics_integration" {
   default     = ""
 }
 
+variable "metrics_port" {
+  description = "Port which will expose sidecar metrics"
+  default     = 8080
+  type        = number
+}
+
 variable "log_integration" {
   description = "Logs destination"
   type        = string
