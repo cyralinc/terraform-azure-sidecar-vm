@@ -76,7 +76,7 @@ variable "metrics_port" {
 
 variable "metrics_source_address_prefixes" {
   description = "Source address prefixes that will be able to reach the metrics port"
-  default     = {}
+  default     = []
   type        = set(string)
 }
 
