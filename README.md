@@ -60,7 +60,7 @@ module "cyral_sidecar" {
 
 | Name | Version |
 |------|---------|
-| <a name="provider_azurerm"></a> [azurerm](#provider\_azurerm) | 3.30.0 |
+| <a name="provider_azurerm"></a> [azurerm](#provider\_azurerm) | >=3.29.0 |
 
 ## Modules
 
@@ -80,6 +80,7 @@ No modules.
 | [azurerm_log_analytics_workspace.log_analytics_workspace](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/log_analytics_workspace) | resource |
 | [azurerm_monitor_autoscale_setting.monitor_autoscale_setting](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/monitor_autoscale_setting) | resource |
 | [azurerm_network_security_group.nsg](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/network_security_group) | resource |
+| [azurerm_network_security_rule.security_rule_metrics](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/network_security_rule) | resource |
 | [azurerm_network_security_rule.security_rule_sidecar_inbound](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/network_security_rule) | resource |
 | [azurerm_network_security_rule.security_rule_ssh](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/network_security_rule) | resource |
 | [azurerm_public_ip.public_ip](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/public_ip) | resource |
@@ -106,7 +107,7 @@ No modules.
 | <a name="input_container_registry_key"></a> [container\_registry\_key](#input\_container\_registry\_key) | Key provided by Cyral for authenticating on Cyral's container registry | `string` | `""` | no |
 | <a name="input_container_registry_username"></a> [container\_registry\_username](#input\_container\_registry\_username) | Username provided by Cyral for authenticating on Cyral's container registry | `string` | `""` | no |
 | <a name="input_control_plane"></a> [control\_plane](#input\_control\_plane) | Address of the control plane - <tenant>.app.cyral.com | `string` | n/a | yes |
-| <a name="input_custom_user_data"></a> [custom\_user\_data](#input\_custom\_user\_data) | Ancillary consumer supplied user-data script. Bash scripts must be added to a map as a value of the key `pre` and/or `post` denoting execution order with respect to sidecar installation (Approx Input Size = 19KB) | `map(any)` | <pre>{<br>  "post": "",<br>  "pre": ""<br>}</pre> | no |
+| <a name="input_custom_user_data"></a> [custom\_user\_data](#input\_custom\_user\_data) | Ancillary consumer supplied user-data script. Bash scripts must be added to a map as a value of the key `pre` and/or `post` denoting execution order with respect to sidecar installation. (Approx Input Size = 19KB) | `map(any)` | <pre>{<br>  "post": "",<br>  "pre": ""<br>}</pre> | no |
 | <a name="input_dd_api_key"></a> [dd\_api\_key](#input\_dd\_api\_key) | API key to connect to DataDog | `string` | `""` | no |
 | <a name="input_elk_address"></a> [elk\_address](#input\_elk\_address) | Address to ship logs to ELK | `string` | `""` | no |
 | <a name="input_elk_password"></a> [elk\_password](#input\_elk\_password) | (Optional) Password to use to ship logs to ELK | `string` | `""` | no |
@@ -121,6 +122,8 @@ No modules.
 | <a name="input_key_vault_name"></a> [key\_vault\_name](#input\_key\_vault\_name) | Location in Azure Key Vault to store secrets | `string` | `""` | no |
 | <a name="input_log_integration"></a> [log\_integration](#input\_log\_integration) | Logs destination | `string` | `"azure-log-analytics"` | no |
 | <a name="input_metrics_integration"></a> [metrics\_integration](#input\_metrics\_integration) | Metrics destination | `string` | `""` | no |
+| <a name="input_metrics_port"></a> [metrics\_port](#input\_metrics\_port) | Port which will expose sidecar metrics | `number` | `9000` | no |
+| <a name="input_metrics_source_address_prefixes"></a> [metrics\_source\_address\_prefixes](#input\_metrics\_source\_address\_prefixes) | Source address prefixes that will be able to reach the metrics port | `set(string)` | `[]` | no |
 | <a name="input_name_prefix"></a> [name\_prefix](#input\_name\_prefix) | Prefix for names of created resources. Maximum length is 24 characters | `string` | `""` | no |
 | <a name="input_public_load_balancer"></a> [public\_load\_balancer](#input\_public\_load\_balancer) | Set true to add a public IP to the load balancer | `bool` | `false` | no |
 | <a name="input_repositories_supported"></a> [repositories\_supported](#input\_repositories\_supported) | List of all repositories that will be supported by the sidecar (lower case only) | `list(string)` | <pre>[<br>  "denodo",<br>  "dremio",<br>  "dynamodb",<br>  "mongodb",<br>  "mysql",<br>  "oracle",<br>  "postgresql",<br>  "redshift",<br>  "snowflake",<br>  "sqlserver",<br>  "s3"<br>]</pre> | no |
