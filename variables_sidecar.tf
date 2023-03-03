@@ -68,18 +68,6 @@ variable "metrics_integration" {
   default     = ""
 }
 
-variable "metrics_port" {
-  description = "Port which will expose sidecar metrics"
-  default     = 8080
-  type        = number
-}
-
-variable "metrics_source_address_prefixes" {
-  description = "Source address prefixes that will be able to reach the metrics port"
-  default     = []
-  type        = set(string)
-}
-
 variable "log_integration" {
   description = "Logs destination"
   type        = string
@@ -100,6 +88,18 @@ variable "sidecar_id" {
 variable "sidecar_ports" {
   description = "List of ports allowed to connect to the sidecar"
   type        = list(number)
+}
+
+variable "metrics_port" {
+  description = "Port which will expose sidecar metrics"
+  default     = 9000
+  type        = number
+}
+
+variable "metrics_source_address_prefixes" {
+  description = "Source address prefixes that will be able to reach the metrics port"
+  default     = []
+  type        = set(string)
 }
 
 variable "sidecar_version" {
