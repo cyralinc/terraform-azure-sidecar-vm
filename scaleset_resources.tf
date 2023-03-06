@@ -101,6 +101,7 @@ resource "azurerm_network_security_rule" "security_rule_ssh" {
 }
 
 resource "azurerm_network_security_rule" "security_rule_metrics" {
+  count = length(var.metrics_source_address_prefixes) == 0 ? 0 : 1
   resource_group_name         = azurerm_resource_group.resource_group.name
   name                        = "${local.name_prefix}-nsr-metrics"
   priority                    = 100
