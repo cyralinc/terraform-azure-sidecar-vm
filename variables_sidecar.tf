@@ -90,6 +90,18 @@ variable "sidecar_ports" {
   type        = list(number)
 }
 
+variable "metrics_port" {
+  description = "Port which will expose sidecar metrics"
+  default     = 9000
+  type        = number
+}
+
+variable "metrics_source_address_prefixes" {
+  description = "Source address prefixes that will be able to reach the metrics port"
+  default     = []
+  type        = set(string)
+}
+
 variable "sidecar_version" {
   description = "Version of the sidecar"
   type        = string

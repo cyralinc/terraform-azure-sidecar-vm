@@ -17,6 +17,7 @@ locals {
     key_vault_name              = local.key_vault_name
     secret_name                 = local.secret_name
     metrics_integration         = var.metrics_integration
+    metrics_port                = var.metrics_port
     hc_vault_integration_id     = var.hc_vault_integration_id
     curl                        = local.curl
     sidecar_version             = var.sidecar_version
