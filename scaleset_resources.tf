@@ -62,8 +62,9 @@ resource "azurerm_lb_backend_address_pool" "lb_backend_address_pool" {
 resource "azurerm_lb_probe" "lb_probe" {
   loadbalancer_id     = azurerm_lb.lb.id
   name                = "${local.name_prefix}-lb-probe"
-  port                = 8888
-  protocol            = "Tcp"
+  port                = 9000
+  protocol            = "Http"
+  request_path        = "/health"
   probe_threshold     = 3
   interval_in_seconds = 5
 }
@@ -101,7 +102,7 @@ resource "azurerm_network_security_rule" "security_rule_ssh" {
 }
 
 resource "azurerm_network_security_rule" "security_rule_metrics" {
-  count = length(var.metrics_source_address_prefixes) == 0 ? 0 : 1
+  count                       = length(var.metrics_source_address_prefixes) == 0 ? 0 : 1
   resource_group_name         = azurerm_resource_group.resource_group.name
   name                        = "${local.name_prefix}-nsr-metrics"
   priority                    = 100
@@ -109,7 +110,7 @@ resource "azurerm_network_security_rule" "security_rule_metrics" {
   access                      = "Allow"
   source_port_range           = "*"
   protocol                    = "Tcp"
-  destination_port_range      = var.metrics_port
+  destination_port_range      = 9000
   source_address_prefixes     = var.metrics_source_address_prefixes
   destination_address_prefix  = "*"
   network_security_group_name = azurerm_network_security_group.nsg.name
@@ -153,7 +154,7 @@ resource "azurerm_linux_virtual_machine_scale_set" "scale_set" {
   resource_group_name = azurerm_resource_group.resource_group.name
   location            = azurerm_resource_group.resource_group.location
   tags = {
-    "MetricsPort" : var.metrics_port
+    "MetricsPort" : 9000
   }
   sku                             = var.instance_type
   admin_username                  = var.vm_username

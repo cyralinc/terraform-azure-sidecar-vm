@@ -91,7 +91,12 @@ variable "sidecar_ports" {
 }
 
 variable "metrics_port" {
-  description = "Port which will expose sidecar metrics"
+  description = <<EOF
+(Deprecated) Port which will expose sidecar metrics.
+
+This has been deprecated for sidecars with versions v4.7.0 and above, and is
+now hardcoded to port 9000.
+EOF
   default     = 9000
   type        = number
 }

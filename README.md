@@ -122,7 +122,7 @@ No modules.
 | <a name="input_key_vault_name"></a> [key\_vault\_name](#input\_key\_vault\_name) | Location in Azure Key Vault to store secrets | `string` | `""` | no |
 | <a name="input_log_integration"></a> [log\_integration](#input\_log\_integration) | Logs destination | `string` | `"azure-log-analytics"` | no |
 | <a name="input_metrics_integration"></a> [metrics\_integration](#input\_metrics\_integration) | Metrics destination | `string` | `""` | no |
-| <a name="input_metrics_port"></a> [metrics\_port](#input\_metrics\_port) | Port which will expose sidecar metrics | `number` | `9000` | no |
+| <a name="input_metrics_port"></a> [metrics\_port](#input\_metrics\_port) | (Deprecated) Port which will expose sidecar metrics.<br><br>This has been deprecated for sidecars with versions v4.7.0 and above, and is<br>now hardcoded to port 9000. | `number` | `9000` | no |
 | <a name="input_metrics_source_address_prefixes"></a> [metrics\_source\_address\_prefixes](#input\_metrics\_source\_address\_prefixes) | Source address prefixes that will be able to reach the metrics port | `set(string)` | `[]` | no |
 | <a name="input_name_prefix"></a> [name\_prefix](#input\_name\_prefix) | Prefix for names of created resources. Maximum length is 24 characters | `string` | `""` | no |
 | <a name="input_public_load_balancer"></a> [public\_load\_balancer](#input\_public\_load\_balancer) | Set true to add a public IP to the load balancer | `bool` | `false` | no |
