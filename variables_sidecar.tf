@@ -1,30 +1,35 @@
-variable "container_registry" {
-  description = "Address of the container registry where Cyral images are stored"
-  type        = string
-}
-
-variable "container_registry_username" {
-  description = "Username provided by Cyral for authenticating on Cyral's container registry"
-  type        = string
-  default     = ""
-}
-
-variable "container_registry_key" {
-  description = "Key provided by Cyral for authenticating on Cyral's container registry"
-  type        = string
-  default     = ""
-  sensitive   = true
-}
-
 variable "client_id" {
-  description = "The client id assigned to the sidecar"
+  description = "(Optional) The client id assigned to the sidecar. If not provided, must provide a secret containing the respective client id using `secret_name`."
   type        = string
+  default     = ""
+  validation {
+    condition = (
+      (length(var.client_id) > 0 && length(var.secret_name) > 0) ||
+      (length(var.client_id) == 0 && length(var.secret_name) > 0) ||
+      (length(var.client_id) > 0 && length(var.secret_name) == 0)
+    )
+    error_message = "Must be provided if `secret_name` is empty and must be empty if `secret_name` is provided."
+  }
 }
 
 variable "client_secret" {
-  description = "The client secret assigned to the sidecar"
+  description = "(Optional) The client secret assigned to the sidecar. If not provided, must provide a secret containing the respective client secret using `secret_name`."
   type        = string
   sensitive   = true
+  default     = ""
+  validation {
+    condition = (
+      (length(var.client_secret) > 0 && length(var.secret_name) > 0) ||
+      (length(var.client_secret) == 0 && length(var.secret_name) > 0) ||
+      (length(var.client_secret) > 0 && length(var.secret_name) == 0)
+    )
+    error_message = "Must be provided if `secret_name` is empty and must be empty if `secret_name` is provided."
+  }
+}
+
+variable "container_registry" {
+  description = "Address of the container registry where Cyral images are stored"
+  type        = string
 }
 
 variable "control_plane" {
@@ -32,10 +37,16 @@ variable "control_plane" {
   type        = string
 }
 
-variable "external_tls_type" {
-  description = "TLS mode for the control plane - tls, tls-skip-verify, no-tls"
-  type        = string
-  default     = "tls"
+variable "curl_connect_timeout" {
+  description = "(Optional) The maximum time in seconds that curl connections are allowed to take."
+  type        = number
+  default     = 60
+}
+
+variable "custom_user_data" {
+  description = "Ancillary consumer supplied user-data script. Bash scripts must be added to a map as a value of the key `pre`, `pre_sidecar_start`, `post` denoting execution order with respect to sidecar installation. (Approx Input Size = 19KB)"
+  type        = map(any)
+  default     = { "pre" = "", "pre_sidecar_start" = "", "post" = "" }
 }
 
 variable "iam_policies" {
@@ -56,22 +67,14 @@ variable "iam_no_actions_role_permissions" {
   default     = []
 }
 
-variable "secret_manager_type" {
-  description = "Define secret manager type for sidecar_client_id and sidecar_client_secret"
-  type        = string
-  default     = "azure-key-vault"
-}
-
-variable "metrics_integration" {
-  description = "Metrics destination"
-  type        = string
-  default     = ""
-}
-
-variable "log_integration" {
-  description = "Logs destination"
-  type        = string
-  default     = "azure-log-analytics"
+variable "monitoring_source_address_prefixes" {
+  description = <<EOF
+Allowed CIDR blocks or IP addresses for health check and metric requests to the sidecar.
+If restricting the access, consider setting to the Virtual Network CIDR or an equivalent
+to cover the assigned subnets as the load balancer performs health checks on the VM instances.
+EOF
+  default     = ["0.0.0.0/0"]
+  type        = set(string)
 }
 
 variable "name_prefix" {
@@ -90,21 +93,10 @@ variable "sidecar_ports" {
   type        = list(number)
 }
 
-variable "metrics_port" {
-  description = "Port which will expose sidecar metrics"
-  default     = 9000
-  type        = number
-}
-
-variable "metrics_source_address_prefixes" {
-  description = "Source address prefixes that will be able to reach the metrics port"
-  default     = []
-  type        = set(string)
-}
-
 variable "sidecar_version" {
   description = "Version of the sidecar"
   type        = string
+  default     = ""
 }
 
 variable "repositories_supported" {
@@ -113,8 +105,20 @@ variable "repositories_supported" {
   default     = ["denodo", "dremio", "dynamodb", "mongodb", "mysql", "oracle", "postgresql", "redshift", "snowflake", "sqlserver", "s3"]
 }
 
-variable "custom_user_data" {
-  description = "Ancillary consumer supplied user-data script. Bash scripts must be added to a map as a value of the key `pre` and/or `post` denoting execution order with respect to sidecar installation. (Approx Input Size = 19KB)"
-  type        = map(any)
-  default     = { "pre" = "", "post" = "" }
+variable "recycle_health_check_interval_sec" {
+  description = "(Optional) The interval (in seconds) in which the sidecar instance checks whether it has been marked or recycling."
+  type        = number
+  default     = 30
+}
+
+variable "ssh_source_address_prefixes" {
+  description = "Source address prefixes that will be able to reach the instances using SSH"
+  default     = ["0.0.0.0/0"]
+  type        = set(string)
+}
+
+variable "tls_skip_verify" {
+  description = "(Optional) Skip TLS verification for HTTPS communication with the control plane and during sidecar initialization"
+  type        = bool
+  default     = false
 }
