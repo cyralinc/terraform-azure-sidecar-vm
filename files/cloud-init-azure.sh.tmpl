@@ -82,7 +82,7 @@ unset secret_data
 
 echo "Initializing environment variables..."
 cat > /home/${vm_username}/.env << EOF
-SIDECAR_ID=${sidecar_id}
+CYRAL_SIDECAR_ID=${sidecar_id}
 CONTROLPLANE_HOST=${controlplane_host}
 CONTAINER_REGISTRY=${container_registry}
 LOG_INTEGRATION=${log_integration}
@@ -90,11 +90,12 @@ METRICS_INTEGRATION=${metrics_integration}
 METRICS_PORT=${metrics_port}
 HCVAULT_INTEGRATION_ID=${hc_vault_integration_id}
 INSTANCE_ID=$INSTANCE_ID
-SIDECAR_CLIENT_ID=$SIDECAR_CLIENT_ID
-SIDECAR_CLIENT_SECRET=$SIDECAR_CLIENT_SECRET
+CYRAL_SIDECAR_CLIENT_ID=$SIDECAR_CLIENT_ID
+CYRAL_SIDECAR_CLIENT_SECRET=$SIDECAR_CLIENT_SECRET
 SIDECAR_ENDPOINT=${sidecar_endpoint}
 WORKSPACE_ID=$WORKSPACE_ID
 PRIMARY_SHARED_KEY=$PRIMARY_SHARED_KEY
+SIDECAR_VERSION=${sidecar_version}
 EOF
 
 echo "Downloading sidecar.compose.yaml..."
