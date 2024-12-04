@@ -1,3 +1,9 @@
+variable "db_source_address_prefixes" {
+  description = "Allowed CIDR blocks or IP addresses for database access to the sidecar."
+  default     = ["0.0.0.0/0"]
+  type        = set(string)
+}
+
 variable "client_id" {
   description = "(Optional) The client id assigned to the sidecar. If not provided, must provide a secret containing the respective client id using `secret_name`."
   type        = string
@@ -30,6 +36,7 @@ variable "client_secret" {
 variable "container_registry" {
   description = "Address of the container registry where Cyral images are stored"
   type        = string
+  default     = "public.ecr.aws/cyral"
 }
 
 variable "control_plane" {

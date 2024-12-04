@@ -177,7 +177,7 @@ resource "azurerm_network_security_rule" "security_rule_sidecar_inbound" {
   source_port_range           = "*"
   protocol                    = "Tcp"
   destination_port_range      = element(var.sidecar_ports, count.index)
-  source_address_prefix       = "*"
+  source_address_prefixes     = var.db_source_address_prefixes
   destination_address_prefix  = "*"
   network_security_group_name = azurerm_network_security_group.nsg.name
 }
@@ -213,9 +213,8 @@ resource "azurerm_linux_virtual_machine_scale_set" "scale_set" {
 
   admin_ssh_key {
     username   = var.vm_username
-    public_key = var.admin_public_key
+    public_key = var.admin_ssh_key
   }
-
 
   custom_data = base64encode(<<-EOT
   #!/bin/bash -e

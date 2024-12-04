@@ -1,6 +1,11 @@
-variable "admin_public_key" {
-  description = "The Public Key which should be used for authentication, which needs to be at least 2048-bit and in ssh-rsa format"
+variable "admin_ssh_key" {
+  description = "The public Key which should be used for authentication, which needs to be at least 2048-bit and in ssh-rsa format"
   type        = string
+  default     = ""
+  validation {
+    condition = (length(var.admin_ssh_key) > 0 && length(var.vm_username) > 0)
+    error_message = "`admin_ssh_key` and `vm_username` must be specified."
+  }
 }
 
 variable "auto_scale_enabled" {
@@ -43,15 +48,6 @@ variable "key_vault_name" {
   description = "Location in Azure Key Vault to store secrets"
   type        = string
   default     = ""
-}
-
-variable "load_balancer_sticky_ports" {
-  description = <<EOF
-List of ports that will have session stickiness enabled.
-This parameter must be a subset of 'sidecar_ports'.
-EOF
-  type        = list(number)
-  default     = []
 }
 
 variable "public_load_balancer" {
