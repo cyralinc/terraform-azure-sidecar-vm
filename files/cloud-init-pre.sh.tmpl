@@ -1,0 +1,142 @@
+mkdir -p /home/${vm_username}/cyral/
+
+package_install
+get_secret
+fetch_hostname
+
+# Fetch instance metadata
+INSTANCE_METADATA=$(curl --max-time 1 --fail --silent \
+    -H Metadata:true --noproxy "*" \
+    "http://169.254.169.254/metadata/instance?api-version=2021-02-01")
+
+if [ -z "$INSTANCE_METADATA" ]; then
+  echo "Error fetching instance metadata from Azure."
+  exit 2
+fi
+
+SCALESET_NAME=$(echo $INSTANCE_METADATA | jq -r '.compute.vmScaleSetName')
+
+SCALESET_INSTANCE_ID=$(az vmss list-instances \
+  --resource-group ${resource_group_name} \
+  --name $SCALESET_NAME \
+  --query "[].{InstanceId:instanceId, Name:osProfile.computerName}" | jq \
+    -r 'select(.[].Name == "'$INSTANCE_ID'") | .[].InstanceId')
+
+if [ -z "$SCALESET_INSTANCE_ID" ]; then
+  echo "Error getting scale set instance id" 
+  exit 7
+fi
+
+# Get the latest sidecar version from the Control Plane if necessary.
+IS_DYNAMIC_VERSION="false"
+SIDECAR_VERSION=${sidecar_version}
+if [ -z "$SIDECAR_VERSION" ]; then
+  echo "Sidecar version is unset - version will be dynamically managed."
+  IS_DYNAMIC_VERSION="true"
+  get_sidecar_version
+  if [ $? -ne 0 ]; then
+    echo "Error getting sidecar version from Control Plane. Dynamic version support is only enabled for Control Planes >= v4.10"
+    exit 4
+  fi
+  if [ -z "$SIDECAR_VERSION" ]; then
+    echo "Sidecar version is undefined."
+    exit 5
+  fi
+
+  # Create custom health check scripts
+  cat << EOF > /home/${vm_username}/cyral/healthcheck.sh
+#!/usr/bin/env bash
+health=\$(${curl} -sf -X GET "http://localhost:9000/health")
+if [ \$? -ne 0 ]; then
+  echo "Error getting sidecar health"
+  exit 6
+fi
+recycle_status=\$(echo \$health | jq -r .components.recycle.status)
+if [ \$recycle_status == "degraded" ]; then
+  echo "Sidecar instance has been marked for recycling - marking instance to be deallocated"
+
+  az vmss delete-instances \
+    --resource-group ${resource_group_name} \
+    --name $SCALESET_NAME \
+    --instance-id $SCALESET_INSTANCE_ID
+fi
+EOF
+
+  cat << EOF > /etc/systemd/system/healthcheck.service
+[Unit]
+Description=Sidecar recycle VM health check
+[Service]
+Environment="INSTANCE_ID=$INSTANCE_ID"
+ExecStart=/home/${vm_username}/cyral/healthcheck.sh
+EOF
+
+  cat << EOF > /etc/systemd/system/healthcheck.timer
+[Unit]
+Description=Sidecar recycle health check every 30 sec
+[Timer]
+OnBootSec=30
+OnUnitActiveSec=${recycle_health_check_interval_sec}
+AccuracySec=1
+[Install]
+WantedBy=timers.target
+EOF
+
+  # Start health check timer
+  chmod +x /home/${vm_username}/cyral/healthcheck.sh
+  sudo systemctl enable healthcheck.timer
+  sudo systemctl daemon-reload
+  sudo systemctl start healthcheck.timer
+fi
+
+echo "Sidecar version: $SIDECAR_VERSION"
+
+docker_setup
+update_nginx_resolver
+load_certs
+load_idp_certs
+registry_login
+
+CYRAL_SIDECAR_ENDPOINT="${sidecar_endpoint}"
+if [ -z "$CYRAL_SIDECAR_ENDPOINT" ]; then
+  CYRAL_SIDECAR_ENDPOINT=$(echo $INSTANCE_METADATA | \
+    jq -r '.network.interface[].ipv4.ipAddress[] | if .publicIpAddress != "" then .publicIpAddress else .privateIpAddress end')
+fi
+
+echo "Sidecar endpoint: $CYRAL_SIDECAR_ENDPOINT"
+
+echo "Initializing environment variables..."
+cat > /home/${vm_username}/.env << EOF
+
+IS_DYNAMIC_VERSION=$IS_DYNAMIC_VERSION
+IS_RECYCLABLE=true
+
+CYRAL_SIDECAR_TLS_TYPE=${tls_type}
+
+CYRAL_IDP_CERTIFICATE=$IDP_CERTIFICATE
+CYRAL_NGINX_RESOLVER=$NGINX_RESOLVER
+CYRAL_SSO_LOGIN_URL=${idp_sso_login_url}
+
+CYRAL_SIDECAR_IDP_PUBLIC_CERT=$SIDECAR_IDP_PUBLIC_CERT
+CYRAL_SIDECAR_IDP_PRIVATE_KEY=$SIDECAR_IDP_PRIVATE_KEY
+
+CYRAL_SIDECAR_CA_CERT=$${SIDECAR_CA_CERT}
+CYRAL_SIDECAR_CA_PRIVATE_KEY=$${SIDECAR_CA_KEY}
+CYRAL_SIDECAR_TLS_CERT=$${SIDECAR_TLS_CERT}
+CYRAL_SIDECAR_TLS_PRIVATE_KEY=$${SIDECAR_TLS_KEY}
+
+CYRAL_CONTROL_PLANE=${controlplane_host}
+
+CYRAL_SIDECAR_ID=${sidecar_id}
+CYRAL_SIDECAR_CLIENT_ID=$${SIDECAR_CLIENT_ID}
+CYRAL_SIDECAR_CLIENT_SECRET=$${SIDECAR_CLIENT_SECRET}
+CYRAL_SIDECAR_CLOUD_PROVIDER=azure
+CYRAL_SIDECAR_DEPLOYMENT_PROPERTIES='{ \"ressource-group\": \"${resource_group_name}\",\"location\": \"${resource_group_location}\",\"deployment-type\": \"terraform-azure\"}'
+CYRAL_SIDECAR_ENDPOINT=$CYRAL_SIDECAR_ENDPOINT
+CYRAL_SIDECAR_INSTANCE_ID=$INSTANCE_ID
+CYRAL_SIDECAR_VERSION=$SIDECAR_VERSION
+
+CYRAL_REPOSITORIES_SUPPORTED=${repositories_supported}
+
+SCALESET_NAME=$SCALESET_NAME
+
+EOF
