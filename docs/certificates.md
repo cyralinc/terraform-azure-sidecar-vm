@@ -9,8 +9,8 @@ instructions on how to use a custom certificate.
 ## Use your own certificate
 
 You can use a certificate signed by you or the Certificate Authority of your
-choice. Provide the ARN of the certificate secrets to the sidecar module, as
-in the section [Provide custom certificate to the sidecar](#provide-custom-certificate-to-the-sidecar).
+choice. Provide the ID of the certificate secrets to the sidecar module, as
+described in the section [Provide custom certificate to the sidecar](#provide-custom-certificate-to-the-sidecar).
 Please make sure
 that the following requirements are met by your private key / certificate pair:
 
@@ -20,7 +20,8 @@ that the following requirements are met by your private key / certificate pair:
 - The certificate must follow the **X.509** format.
 
 **WARNING:** *Windows* commonly uses UTF-16 little-endian encoding. A UTF-16 certificate
-   or private key will *not* work in the sidecar.
+   or private key will *not* work in the sidecar. Make sure to convert it to UTF-8 before
+   storing the private key and certificate in the secret.
 
 ## Provide custom certificate to the sidecar
 

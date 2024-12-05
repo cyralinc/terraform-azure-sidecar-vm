@@ -43,7 +43,7 @@ output "tls_certificate_secret_id" {
   description = "ID of the TLS certificate secret used by the sidecar"
 }
 
-output "user_assigned_identity_id" {
-  value       = azurerm_user_assigned_identity.user_assigned_identity.id
-  description = "ID of the User Assigned Identity used by the sidecar"
+output "user_assigned_identity_name" {
+  value       = azurerm_user_assigned_identity.user_assigned_identity.name
+  description = "Name of the User Assigned Identity used by the sidecar"
 }

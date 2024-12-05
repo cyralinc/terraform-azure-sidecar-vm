@@ -186,7 +186,6 @@ No modules.
 | <a name="input_idp_sso_login_url"></a> [idp\_sso\_login\_url](#input\_idp\_sso\_login\_url) | (Optional) The IdP SSO URL for the IdP being used with Snowflake. | `string` | `""` | no |
 | <a name="input_instance_os_disk_storage_account_type"></a> [instance\_os\_disk\_storage\_account\_type](#input\_instance\_os\_disk\_storage\_account\_type) | The Type of Storage Account which should back this Data Disk | `string` | `"Standard_LRS"` | no |
 | <a name="input_instance_type"></a> [instance\_type](#input\_instance\_type) | Azure virtual machine scale set instance type for the sidecar instances | `string` | `"standard_ds2_v2"` | no |
-| <a name="input_load_balancer_certificate_arn"></a> [load\_balancer\_certificate\_arn](#input\_load\_balancer\_certificate\_arn) | (Optional) ARN of SSL certificate that will be used for client connections to Snowflake. | `string` | `""` | no |
 | <a name="input_monitoring_source_address_prefixes"></a> [monitoring\_source\_address\_prefixes](#input\_monitoring\_source\_address\_prefixes) | Allowed CIDR blocks or IP addresses for health check and metric requests to the sidecar.<br/>If restricting the access, consider setting to the Virtual Network CIDR or an equivalent<br/>to cover the assigned subnets as the load balancer performs health checks on the VM instances. | `set(string)` | <pre>[<br/>  "0.0.0.0/0"<br/>]</pre> | no |
 | <a name="input_name_prefix"></a> [name\_prefix](#input\_name\_prefix) | Prefix for names of created resources. Maximum length is 24 characters | `string` | `""` | no |
 | <a name="input_public_load_balancer"></a> [public\_load\_balancer](#input\_public\_load\_balancer) | Set true to add a public IP to the load balancer | `bool` | `false` | no |
@@ -223,5 +222,5 @@ No modules.
 | <a name="output_resource_group_name"></a> [resource\_group\_name](#output\_resource\_group\_name) | Azure resource group name that the sidecar belongs to. |
 | <a name="output_secret_id"></a> [secret\_id](#output\_secret\_id) | ID of the secret with the credentials used by the sidecar |
 | <a name="output_tls_certificate_secret_id"></a> [tls\_certificate\_secret\_id](#output\_tls\_certificate\_secret\_id) | ID of the TLS certificate secret used by the sidecar |
-| <a name="output_user_assigned_identity_id"></a> [user\_assigned\_identity\_id](#output\_user\_assigned\_identity\_id) | ID of the User Assigned Identity used by the sidecar |
+| <a name="output_user_assigned_identity_name"></a> [user\_assigned\_identity\_name](#output\_user\_assigned\_identity\_name) | Name of the User Assigned Identity used by the sidecar |
 <!-- END_TF_DOCS -->
