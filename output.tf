@@ -13,6 +13,16 @@ output "log_analytics_workspace_id" {
   description = "Azure Log Analytics workspace ID."
 }
 
+output "log_analytics_workspace_primary_shared_key" {
+  value       = azurerm_log_analytics_workspace.log_analytics_workspace.primary_shared_key
+  description = "Azure Log Analytics primary shared key."
+}
+
+output "log_analytics_workspace_secondary_shared_key" {
+  value       = azurerm_log_analytics_workspace.log_analytics_workspace.secondary_shared_key
+  description = "Azure Log Analytics secondary shared key."
+}
+
 output "resource_group_name" {
   value       = azurerm_resource_group.resource_group.name
   description = "Azure resource group name."
