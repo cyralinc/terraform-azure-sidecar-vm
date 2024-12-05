@@ -117,13 +117,13 @@ Instructions for advanced deployment configurations are available for the follow
 | Name | Version |
 |------|---------|
 | <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | >= 1.9 |
-| <a name="requirement_azurerm"></a> [azurerm](#requirement\_azurerm) | ~> 3.29 |
+| <a name="requirement_azurerm"></a> [azurerm](#requirement\_azurerm) | ~> 4.0 |
 
 ## Providers
 
 | Name | Version |
 |------|---------|
-| <a name="provider_azurerm"></a> [azurerm](#provider\_azurerm) | ~> 3.29 |
+| <a name="provider_azurerm"></a> [azurerm](#provider\_azurerm) | ~> 4.0 |
 | <a name="provider_tls"></a> [tls](#provider\_tls) | n/a |
 
 ## Modules
@@ -214,12 +214,14 @@ No modules.
 
 | Name | Description |
 |------|-------------|
-| <a name="output_ca_certificate_secret_id"></a> [ca\_certificate\_secret\_id](#output\_ca\_certificate\_secret\_id) | ID of the CA certificate secret used sidecar |
+| <a name="output_ca_certificate_secret_id"></a> [ca\_certificate\_secret\_id](#output\_ca\_certificate\_secret\_id) | ID of the CA certificate secret used sidecar. |
 | <a name="output_load_balancer_dns"></a> [load\_balancer\_dns](#output\_load\_balancer\_dns) | Sidecar load balancer DNS endpoint. |
+| <a name="output_load_balancer_id"></a> [load\_balancer\_id](#output\_load\_balancer\_id) | ID of the load balancer. |
 | <a name="output_log_analytics_workspace_id"></a> [log\_analytics\_workspace\_id](#output\_log\_analytics\_workspace\_id) | Azure Log Analytics workspace ID. |
 | <a name="output_log_analytics_workspace_primary_shared_key"></a> [log\_analytics\_workspace\_primary\_shared\_key](#output\_log\_analytics\_workspace\_primary\_shared\_key) | Azure Log Analytics primary shared key. |
 | <a name="output_log_analytics_workspace_secondary_shared_key"></a> [log\_analytics\_workspace\_secondary\_shared\_key](#output\_log\_analytics\_workspace\_secondary\_shared\_key) | Azure Log Analytics secondary shared key. |
-| <a name="output_resource_group_name"></a> [resource\_group\_name](#output\_resource\_group\_name) | Azure resource group name. |
+| <a name="output_resource_group_name"></a> [resource\_group\_name](#output\_resource\_group\_name) | Azure resource group name that the sidecar belongs to. |
 | <a name="output_secret_id"></a> [secret\_id](#output\_secret\_id) | ID of the secret with the credentials used by the sidecar |
-| <a name="output_tls_certificate_secret_id"></a> [tls\_certificate\_secret\_id](#output\_tls\_certificate\_secret\_id) | ID of the TLS certificate secret used sidecar |
+| <a name="output_tls_certificate_secret_id"></a> [tls\_certificate\_secret\_id](#output\_tls\_certificate\_secret\_id) | ID of the TLS certificate secret used by the sidecar |
+| <a name="output_user_assigned_identity_id"></a> [user\_assigned\_identity\_id](#output\_user\_assigned\_identity\_id) | ID of the User Assigned Identity used by the sidecar |
 <!-- END_TF_DOCS -->
