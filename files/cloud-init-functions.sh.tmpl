@@ -76,15 +76,14 @@ function extract_cert_from_json_input() {
 }
 
 function get_secret_value() {
-  secret_name="$1"
-  az keyvault secret show --vault-name ${key_vault_name} --name $secret_name --query value -o tsv
+  az keyvault secret show --id "$1" --query value -o tsv
 }
 
 function get_secret(){
     echo "Fetching Secret..."
     az login --identity
-    if ! secret=$(get_secret_value "${sidecar_secret_name}"); then
-        echo "ERROR: Unable to fetch sidecar secrets from ${sidecar_secret_name} see error above"
+    if ! secret=$(get_secret_value "${sidecar_secret_id}"); then
+        echo "ERROR: Unable to fetch sidecar secrets from ${sidecar_secret_id} see error above"
         exit 1
     fi
     SIDECAR_CLIENT_ID=$(echo "$secret" | jq -r .clientId)
@@ -94,11 +93,11 @@ function get_secret(){
 function load_certs() {
     echo "Loading certificates..."
     local tls_cert_secret_value ca_cert_secret_value
-    if ! tls_cert_secret_value=$(get_secret_value "${tls_certificate_secret_name}"); then
-        echo "WnameING: Unable to fetch shared TLS certificate from ${tls_certificate_secret_name} see error above"
+    if ! tls_cert_secret_value=$(get_secret_value "${tls_certificate_secret_id}"); then
+        echo "WnameING: Unable to fetch shared TLS certificate from ${tls_certificate_secret_id} see error above"
     fi
-    if ! ca_cert_secret_value=$(get_secret_value "${ca_certificate_secret_name}"); then
-        echo "WnameING: Unable to fetch shared CA certificate from ${ca_certificate_secret_name}" see error above.
+    if ! ca_cert_secret_value=$(get_secret_value "${ca_certificate_secret_id}"); then
+        echo "WnameING: Unable to fetch shared CA certificate from ${ca_certificate_secret_id}" see error above.
     fi
     SIDECAR_TLS_KEY=$(echo "$tls_cert_secret_value" | extract_key_from_json_input)
     SIDECAR_TLS_CERT=$(echo "$tls_cert_secret_value" | extract_cert_from_json_input)

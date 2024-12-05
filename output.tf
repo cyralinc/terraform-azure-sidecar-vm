@@ -1,6 +1,16 @@
+output "ca_certificate_secret_id" {
+  value       = local.ca_certificate_secret_id
+  description = "ID of the CA certificate secret used sidecar"
+}
+
 output "load_balancer_dns" {
   value       = local.sidecar_endpoint
   description = "Sidecar load balancer DNS endpoint."
+}
+
+output "log_analytics_workspace_id" {
+  value       = azurerm_log_analytics_workspace.log_analytics_workspace.id
+  description = "Azure Log Analytics workspace ID."
 }
 
 output "resource_group_name" {
@@ -8,23 +18,12 @@ output "resource_group_name" {
   description = "Azure resource group name."
 }
 
-
-output "log_analytics_workspace_id" {
-  value       = azurerm_log_analytics_workspace.log_analytics_workspace.id
-  description = "Azure Log Analytics workspace ID."
-}
-
 output "secret_id" {
-  value       = azurerm_key_vault_secret.sidecar_secrets.id
+  value       = local.secret_id
   description = "ID of the secret with the credentials used by the sidecar"
 }
 
-output "ca_certificate_secret_id" {
-  value       = azurerm_key_vault_secret.self_signed_ca.id
-  description = "ID of the CA certificate secret used sidecar"
-}
-
 output "tls_certificate_secret_id" {
-  value       = azurerm_key_vault_secret.self_signed_tls_cert.id
+  value       = local.tls_certificate_secret_id
   description = "ID of the TLS certificate secret used sidecar"
 }

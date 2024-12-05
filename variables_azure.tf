@@ -44,12 +44,6 @@ variable "instance_type" {
   default     = "standard_ds2_v2"
 }
 
-variable "key_vault_name" {
-  description = "Location in Azure Key Vault to store secrets"
-  type        = string
-  default     = ""
-}
-
 variable "public_load_balancer" {
   description = "Set true to add a public IP to the load balancer"
   type        = bool
@@ -67,10 +61,25 @@ variable "resource_group_name" {
   default     = ""
 }
 
-variable "secret_name" {
-  description = "Location in Azure Key Vault to store `client_id` and `client_secret`"
+variable "secret_id" {
+  description = <<EOT
+(Optional) Fully qualified Azure Key Vault Secret resource ID where
+`clientId` and `clientSecret` are stored. If not provided, will
+automatically create a secret storing the values in variables
+`client_id` and `client_secret`.
+EOT
   type        = string
   default     = ""
+  validation {
+    condition = can(regex(
+      "^https://[a-zA-Z0-9-]+\\.vault\\.azure\\.net/secrets/[a-zA-Z0-9-]+/[a-zA-Z0-9]+$",
+      var.secret_id
+    )) || var.secret_id == ""
+    error_message = <<EOT
+The secret_id must be a fully qualified Azure Key Vault Secret ID in the format:
+  https://{vault-name}.vault.azure.net/secrets/{secret-name}/{secret-version}
+EOT
+  }
 }
 
 variable "source_image_offer" {

@@ -6,8 +6,18 @@ locals {
     sidecarPrivateIdpKey        = replace(var.sidecar_private_idp_key, "\n", "\\n")
     idpCertificate              = replace(var.idp_certificate, "\n", "\\n")
   }
-  key_vault_name = var.key_vault_name == "" ? "${local.name_prefix}-kv" : var.key_vault_name
-  secret_name    = length(var.secret_name) > 0 ? var.secret_name : "cyral-sidecars-${var.sidecar_id}-secrets"
+  secret_id = length(var.secret_id) > 0 ? var.secret_id : azurerm_key_vault_secret.sidecar_secrets.id
+
+  ca_certificate_secret_id = (
+    var.ca_certificate_secret_id != "" ?
+    var.ca_certificate_secret_id :
+    azurerm_key_vault_secret.self_signed_ca.id
+  )
+  tls_certificate_secret_id = (
+    var.tls_certificate_secret_id != "" ?
+    var.tls_certificate_secret_id :
+    azurerm_key_vault_secret.self_signed_tls_cert.id
+  )
 
   self_signed_cert_country               = "US"
   self_signed_cert_province              = "CA"
@@ -17,7 +27,7 @@ locals {
 }
 
 resource "azurerm_key_vault" "key_vault" {
-  name                        = local.key_vault_name
+  name                        = "${local.name_prefix}-kv"
   location                    = azurerm_resource_group.resource_group.location
   resource_group_name         = azurerm_resource_group.resource_group.name
   enabled_for_disk_encryption = true
@@ -34,6 +44,7 @@ resource "azurerm_key_vault" "key_vault" {
     secret_permissions = [
       "Get",
       "Set",
+      "List",
       "Delete",
       "Purge",
     ]
@@ -50,7 +61,7 @@ resource "azurerm_key_vault" "key_vault" {
 }
 
 resource "azurerm_key_vault_secret" "sidecar_secrets" {
-  name         = local.secret_name
+  name         = "cyral-sidecars-${var.sidecar_id}-secrets"
   value        = jsonencode(local.sidecar_secrets)
   key_vault_id = azurerm_key_vault.key_vault.id
 }

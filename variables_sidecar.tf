@@ -1,35 +1,54 @@
-variable "db_source_address_prefixes" {
-  description = "Allowed CIDR blocks or IP addresses for database access to the sidecar."
-  default     = ["0.0.0.0/0"]
-  type        = set(string)
+variable "ca_certificate_secret_id" {
+  description = <<EOT
+(Optional) Fully qualified Azure Key Vault Secret resource ID that
+contains CA certificate to sign sidecar-generated certs.
+EOT
+  type        = string
+  default     = ""
+  validation {
+    condition = can(regex(
+      "^https://[a-zA-Z0-9-]+\\.vault\\.azure\\.net/secrets/[a-zA-Z0-9-]+/[a-zA-Z0-9]+$",
+      var.ca_certificate_secret_id
+    )) || var.ca_certificate_secret_id == ""
+    error_message = <<EOT
+The secret_id must be a fully qualified Azure Key Vault Secret ID in the format:
+  https://{vault-name}.vault.azure.net/secrets/{secret-name}/{secret-version}
+EOT
+  }
 }
 
 variable "client_id" {
-  description = "(Optional) The client id assigned to the sidecar. If not provided, must provide a secret containing the respective client id using `secret_name`."
+  description = <<EOT
+(Optional) The client id assigned to the sidecar. If not provided, must
+provide a secret containing the respective client id using `secret_id`."
+EOT
   type        = string
   default     = ""
   validation {
     condition = (
-      (length(var.client_id) > 0 && length(var.secret_name) > 0) ||
-      (length(var.client_id) == 0 && length(var.secret_name) > 0) ||
-      (length(var.client_id) > 0 && length(var.secret_name) == 0)
+      (length(var.client_id) > 0 && length(var.secret_id) > 0) ||
+      (length(var.client_id) == 0 && length(var.secret_id) > 0) ||
+      (length(var.client_id) > 0 && length(var.secret_id) == 0)
     )
-    error_message = "Must be provided if `secret_name` is empty and must be empty if `secret_name` is provided."
+    error_message = "Must be provided if `secret_id` is empty and must be empty if `secret_id` is provided."
   }
 }
 
 variable "client_secret" {
-  description = "(Optional) The client secret assigned to the sidecar. If not provided, must provide a secret containing the respective client secret using `secret_name`."
+  description = <<EOT
+(Optional) The client secret assigned to the sidecar. If not provided, must
+provide a secret containing the respective client secret using `secret_id`."
+EOT
   type        = string
   sensitive   = true
   default     = ""
   validation {
     condition = (
-      (length(var.client_secret) > 0 && length(var.secret_name) > 0) ||
-      (length(var.client_secret) == 0 && length(var.secret_name) > 0) ||
-      (length(var.client_secret) > 0 && length(var.secret_name) == 0)
+      (length(var.client_secret) > 0 && length(var.secret_id) > 0) ||
+      (length(var.client_secret) == 0 && length(var.secret_id) > 0) ||
+      (length(var.client_secret) > 0 && length(var.secret_id) == 0)
     )
-    error_message = "Must be provided if `secret_name` is empty and must be empty if `secret_name` is provided."
+    error_message = "Must be provided if `secret_id` is empty and must be empty if `secret_id` is provided."
   }
 }
 
@@ -56,6 +75,12 @@ variable "custom_user_data" {
   default     = { "pre" = "", "pre_sidecar_start" = "", "post" = "" }
 }
 
+variable "db_source_address_prefixes" {
+  description = "Allowed CIDR blocks or IP addresses for database access to the sidecar."
+  default     = ["0.0.0.0/0"]
+  type        = set(string)
+}
+
 variable "iam_policies" {
   description = "(Optional) List of IAM policies that will be attached to the sidecar IAM role"
   type        = list(string)
@@ -75,11 +100,11 @@ variable "iam_no_actions_role_permissions" {
 }
 
 variable "monitoring_source_address_prefixes" {
-  description = <<EOF
+  description = <<EOT
 Allowed CIDR blocks or IP addresses for health check and metric requests to the sidecar.
 If restricting the access, consider setting to the Virtual Network CIDR or an equivalent
 to cover the assigned subnets as the load balancer performs health checks on the VM instances.
-EOF
+EOT
   default     = ["0.0.0.0/0"]
   type        = set(string)
 }
@@ -122,6 +147,25 @@ variable "ssh_source_address_prefixes" {
   description = "Source address prefixes that will be able to reach the instances using SSH"
   default     = ["0.0.0.0/0"]
   type        = set(string)
+}
+
+variable "tls_certificate_secret_id" {
+  description = <<EOT
+(Optional) Fully qualified Azure Key Vault Secret resource ID that
+contains a certificate to terminate TLS connections."
+EOT
+  type        = string
+  default     = ""
+  validation {
+    condition = can(regex(
+      "^https://[a-zA-Z0-9-]+\\.vault\\.azure\\.net/secrets/[a-zA-Z0-9-]+/[a-zA-Z0-9]+$",
+      var.tls_certificate_secret_id
+    )) || var.tls_certificate_secret_id == ""
+    error_message = <<EOT
+The secret_id must be a fully qualified Azure Key Vault Secret ID in the format:
+  https://{vault-name}.vault.azure.net/secrets/{secret-name}/{secret-version}
+EOT
+  }
 }
 
 variable "tls_skip_verify" {

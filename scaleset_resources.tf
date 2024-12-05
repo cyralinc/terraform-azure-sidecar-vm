@@ -9,12 +9,11 @@ locals {
   name_prefix = var.name_prefix == "" ? "cyral-${substr(lower(var.sidecar_id), -6, -1)}" : var.name_prefix
 
   templatevars = {
-    ca_certificate_secret_name        = azurerm_key_vault_secret.self_signed_ca.name
+    ca_certificate_secret_id          = local.ca_certificate_secret_id
     container_registry                = var.container_registry
     controlplane_host                 = var.control_plane
     curl                              = "${local.curl} --connect-timeout ${var.curl_connect_timeout}"
     idp_sso_login_url                 = var.idp_sso_login_url
-    key_vault_name                    = local.key_vault_name
     name_prefix                       = local.name_prefix
     recycle_health_check_interval_sec = var.recycle_health_check_interval_sec
     repositories_supported            = join(",", var.repositories_supported)
@@ -22,9 +21,9 @@ locals {
     resource_group_location           = azurerm_resource_group.resource_group.location
     sidecar_endpoint                  = local.sidecar_endpoint
     sidecar_id                        = var.sidecar_id
-    sidecar_secret_name               = local.secret_name
+    sidecar_secret_id                 = local.secret_id
     sidecar_version                   = var.sidecar_version
-    tls_certificate_secret_name       = azurerm_key_vault_secret.self_signed_tls_cert.name
+    tls_certificate_secret_id         = local.tls_certificate_secret_id
     tls_type                          = var.tls_skip_verify ? "tls-skip-verify" : "tls"
     vm_username                       = var.vm_username
   }
@@ -280,18 +279,4 @@ resource "azurerm_monitor_autoscale_setting" "monitor_autoscale_setting" {
       maximum = var.auto_scale_max
     }
   }
-}
-
-resource "azurerm_lb_nat_rule" "ssh_nat_rule" {
-  count               = 1 # Assuming 2 instances in the scale set
-  name                = "ssh-rule-${count.index + 1}"
-  resource_group_name = azurerm_resource_group.resource_group.name
-  loadbalancer_id     = azurerm_lb.lb.id
-
-  frontend_ip_configuration_name = local.frontend_ip_config_name
-
-  protocol                = "Tcp"
-  frontend_port           = 5000 + count.index + 1 # e.g., 5001, 5002
-  backend_port            = 22
-  idle_timeout_in_minutes = 4
 }
