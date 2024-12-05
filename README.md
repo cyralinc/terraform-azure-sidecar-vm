@@ -70,7 +70,7 @@ module "cyral_sidecar" {
   resource_group_location = ""
 
   # Path to the public key that will be used to SSH into the VMs
-  admin_ssh_key = file("/Users/me/.ssh/id_ed25519.pub")
+  admin_ssh_key = file("/Users/me/.ssh/id_rsa.pub")
 }
 ```
 **Note:**
