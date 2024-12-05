@@ -4,7 +4,7 @@ You may opt to manage your own secret and provide it to this module instead of
 letting the module manage the sidecar secrets automatically.
 
 You can create your own secret in Azure Key Vault and provide its name
-to parameter `secret_name` as long as the secrets contents is a JSON
+to parameter `secret_id` as long as the secrets contents is a JSON
 with the following format:
 
 ```JSON
