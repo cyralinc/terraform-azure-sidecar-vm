@@ -104,7 +104,6 @@ Learn more in the [sidecar upgrade procedures](https://cyral.com/docs/sidecars/m
 
 Instructions for advanced deployment configurations are available for the following topics:
 
-* [Advanced networking configuration](https://github.com/cyralinc/terraform-azure-sidecar-vm/blob/main/docs/networking.md)
 * [Bring your own secret](https://github.com/cyralinc/terraform-azure-sidecar-vm/blob/main/docs/byos.md)
 * [Customer initialization scripts](https://github.com/cyralinc/terraform-azure-sidecar-vm/blob/main/docs/custom-user-data.md)
 * [Memory limits](https://github.com/cyralinc/terraform-azure-sidecar-vm/blob/main/docs/memlim.md)
