@@ -71,14 +71,18 @@ resource "azurerm_lb_rule" "lb_rule_public_lb" {
 }
 
 resource "azurerm_lb_rule" "lb_rule_private_lb" {
-  for_each = local.subnets_and_ports
+  for_each =  { # Convert set of tuples into a map
+    for idx, val in tolist(setproduct(var.subnets, var.sidecar_ports)) :
+    idx => { subnet = val[0], port = val[1] }
+    if !var.public_load_balancer
+  }
 
-  backend_address_pool_ids       = [azurerm_lb_backend_address_pool.lb_backend_address_pool[index(var.subnets, each.key)].id]
-  backend_port                   = each.value
-  frontend_ip_configuration_name = "${local.frontend_ip_config_name}_${index(var.subnets, each.key)}"
-  frontend_port                  = each.value
+  backend_address_pool_ids       = [azurerm_lb_backend_address_pool.lb_backend_address_pool[index(var.subnets, each.value.subnet)].id]
+  backend_port                   = each.value.port
+  frontend_ip_configuration_name = "${local.frontend_ip_config_name}_${index(var.subnets, each.value.subnet)}"
+  frontend_port                  = each.value.port
   loadbalancer_id                = azurerm_lb.lb.id
-  name                           = "${local.name_prefix}-rule-${each.value}_${each.key}"
+  name                           = "${local.name_prefix}-rule-${each.value.port}_${each.key}"
   probe_id                       = azurerm_lb_probe.lb_probe.id
   protocol                       = "Tcp"
 }

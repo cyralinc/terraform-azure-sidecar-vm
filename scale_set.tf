@@ -1,8 +1,7 @@
 data "azurerm_client_config" "current" {}
 
 locals {
-  sidecar_endpoint        = var.public_load_balancer ? azurerm_public_ip.public_ip[0].fqdn : azurerm_lb.lb.private_ip_address
-  subnets_and_ports       = var.public_load_balancer ? toset([]) : toset(setproduct(var.subnets, var.sidecar_ports))
+  sidecar_endpoint = var.public_load_balancer ? azurerm_public_ip.public_ip[0].fqdn : azurerm_lb.lb.private_ip_address
 
   curl        = var.tls_skip_verify ? "curl -k" : "curl"
   name_prefix = var.name_prefix == "" ? "cyral-${substr(lower(var.sidecar_id), -6, -1)}" : var.name_prefix
