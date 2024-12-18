@@ -1,18 +1,11 @@
-variable "vm_username" {
-  description = "Virtual machine user name"
-  type        = string
-  default     = "ubuntu"
-}
-
-variable "resource_group_name" {
-  description = "Azure resource group name"
+variable "admin_ssh_key" {
+  description = "The public Key which should be used for authentication, which needs to be at least 2048-bit and in ssh-rsa format"
   type        = string
   default     = ""
-}
-
-variable "resource_group_location" {
-  description = "Azure resource group location"
-  type        = string
+  validation {
+    condition = (length(var.admin_ssh_key) > 0 && length(var.vm_username) > 0)
+    error_message = "`admin_ssh_key` and `vm_username` must be specified."
+  }
 }
 
 variable "auto_scale_enabled" {
@@ -39,57 +32,16 @@ variable "auto_scale_max" {
   default     = 2
 }
 
-variable "instance_type" {
-  description = "Azure virtual machine scale set instance type for the sidecar instances"
-  type        = string
-  default     = "Standard_F2"
-}
-
-variable "source_image_publisher" {
-  description = "Specifies the publisher of the image used to create the virtual machines"
-  type        = string
-  default     = "Canonical"
-}
-
-variable "source_image_offer" {
-  description = "Specifies the offer of the image used to create the virtual machines"
-  type        = string
-  default     = "0001-com-ubuntu-server-jammy"
-}
-
-variable "source_image_sku" {
-  description = "Specifies the SKU of the image used to create the virtual machines"
-  type        = string
-  default     = "22_04-lts"
-}
-
-variable "source_image_version" {
-  description = "Specifies the version of the image used to create the virtual machines"
-  type        = string
-  default     = "latest"
-}
-
 variable "instance_os_disk_storage_account_type" {
   description = "The Type of Storage Account which should back this Data Disk"
   type        = string
   default     = "Standard_LRS"
 }
 
-variable "key_vault_name" {
-  description = "Location in Azure Key Vault to store secrets"
+variable "instance_type" {
+  description = "Azure virtual machine scale set instance type for the sidecar instances"
   type        = string
-  default     = ""
-}
-
-variable "secret_name" {
-  description = "Location in Azure Key Vault to store client_id, client_secret and container_registry_key"
-  type        = string
-  default     = ""
-}
-
-variable "admin_public_key" {
-  description = "The Public Key which should be used for authentication, which needs to be at least 2048-bit and in ssh-rsa format"
-  type        = string
+  default     = "standard_ds2_v2"
 }
 
 variable "public_load_balancer" {
@@ -98,7 +50,69 @@ variable "public_load_balancer" {
   default     = false
 }
 
+variable "resource_group_location" {
+  description = "Azure resource group location"
+  type        = string
+}
+
+variable "resource_group_name" {
+  description = "Azure resource group name"
+  type        = string
+  default     = ""
+}
+
+variable "secret_id" {
+  description = <<EOT
+(Optional) Fully qualified Azure Key Vault Secret resource ID where
+`clientId` and `clientSecret` are stored. If not provided, will
+automatically create a secret storing the values in variables
+`client_id` and `client_secret`.
+EOT
+  type        = string
+  default     = ""
+  validation {
+    condition = can(regex(
+      "^https://[a-zA-Z0-9-]+\\.vault\\.azure\\.net/secrets/[a-zA-Z0-9-]+/[a-zA-Z0-9]+$",
+      var.secret_id
+    )) || var.secret_id == ""
+    error_message = <<EOT
+The secret_id must be a fully qualified Azure Key Vault Secret ID in the format:
+  https://{vault-name}.vault.azure.net/secrets/{secret-name}/{secret-version}
+EOT
+  }
+}
+
+variable "source_image_offer" {
+  description = "Specifies the offer of the image used to create the virtual machines"
+  type        = string
+  default     = "ubuntu-24_04-lts"
+}
+
+variable "source_image_publisher" {
+  description = "Specifies the publisher of the image used to create the virtual machines"
+  type        = string
+  default     = "Canonical"
+}
+
+variable "source_image_sku" {
+  description = "Specifies the SKU of the image used to create the virtual machines"
+  type        = string
+  default     = "server"
+}
+
+variable "source_image_version" {
+  description = "Specifies the version of the image used to create the virtual machines"
+  type        = string
+  default     = "latest"
+}
+
 variable "subnets" {
   description = "Subnets to add sidecar to (list of string)"
   type        = list(string)
+}
+
+variable "vm_username" {
+  description = "Virtual machine user name"
+  type        = string
+  default     = "ubuntu"
 }

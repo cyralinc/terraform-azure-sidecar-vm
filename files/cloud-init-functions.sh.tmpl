@@ -1,0 +1,184 @@
+function package_install(){
+    echo "Updating and installing packages..."
+
+    # Install docker
+    curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+
+    echo \
+    "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu \
+    $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+
+    sudo apt-get update -y
+    sudo apt-get install docker-ce docker-ce-cli containerd.io jq -y
+
+    # Install Azure CLI
+    curl -sL https://aka.ms/InstallAzureCLIDeb | sudo bash
+}
+
+function docker_setup(){
+    echo "Configuring Docker..."
+    sudo usermod -a -G docker ${vm_username}
+    # Configure fd limit for VM instance and containers
+    sudo bash -c 'cat > /etc/security/limits.d/fdlimit.conf' << EOF
+*       soft  nofile  65535
+*       hard  nofile  65535
+EOF
+#    sudo bash -c 'cat > /etc/sysconfig/docker' << EOF
+#DAEMON_MAXFILES=65535
+#OPTIONS="--default-ulimit nofile=65535:65535"
+#DAEMON_PIDFILE_TIMEOUT=10
+#EOF
+    sudo systemctl enable docker
+    sudo systemctl restart docker
+
+    # Add current user to docker group
+    sudo usermod -a -G docker ${vm_username}
+    newgrp docker
+}
+
+function retry() {
+  RETRIES=15
+  while [ $RETRIES -gt 0 ]; do
+    set +e
+    $@
+    RESULT=$?
+    set -e
+    if [ $RESULT -eq 0 ]; then
+      echo "Success"
+      return 0
+    fi
+    echo "Failed"
+    sleep 5
+    let RETRIES-=1
+  done
+  echo "Retries exceeded"
+  exit 3
+}
+
+function extract_key_from_json_input() {
+  # Both cert and tls.crt are valid JSON keys for certificates.
+  # certificate-manager expects base64-encoded PEM.
+  # If the value is a raw PEM string, we encoded it in base64.
+  jq -r '
+    (if has("key") then .key else ."tls.key" end) as $key |
+    if ($key | startswith("-----BEGIN")) then ($key | @base64) else ($key | gsub("\\s+"; "")) end
+  '
+}
+
+function extract_cert_from_json_input() {
+  # Both cert and tls.crt are valid JSON keys for certificates.
+  # certificate-manager expects base64-encoded PEM.
+  # If the value is a raw PEM string, we encoded it in base64.
+  jq -r '
+    (if has("cert") then .cert else ."tls.crt" end) as $cert |
+    if ($cert | startswith("-----BEGIN")) then ($cert | @base64) else ($cert | gsub("\\s+"; "")) end
+  '
+}
+
+function get_secret_value() {
+  az keyvault secret show --id "$1" --query value -o tsv
+}
+
+function get_secret(){
+    echo "Fetching Secret..."
+    az login --identity
+    if ! secret=$(get_secret_value "${sidecar_secret_id}"); then
+        echo "ERROR: Unable to fetch sidecar secrets from ${sidecar_secret_id} see error above"
+        exit 1
+    fi
+    SIDECAR_CLIENT_ID=$(echo "$secret" | jq -r .clientId)
+    SIDECAR_CLIENT_SECRET=$(echo "$secret" | jq -r .clientSecret)
+}
+
+function load_certs() {
+    echo "Loading certificates..."
+    local tls_cert_secret_value ca_cert_secret_value
+    if ! tls_cert_secret_value=$(get_secret_value "${tls_certificate_secret_id}"); then
+        echo "WnameING: Unable to fetch shared TLS certificate from ${tls_certificate_secret_id} see error above"
+    fi
+    if ! ca_cert_secret_value=$(get_secret_value "${ca_certificate_secret_id}"); then
+        echo "WnameING: Unable to fetch shared CA certificate from ${ca_certificate_secret_id}" see error above.
+    fi
+    SIDECAR_TLS_KEY=$(echo "$tls_cert_secret_value" | extract_key_from_json_input)
+    SIDECAR_TLS_CERT=$(echo "$tls_cert_secret_value" | extract_cert_from_json_input)
+    SIDECAR_CA_KEY=$(echo "$ca_cert_secret_value" | extract_key_from_json_input)
+    SIDECAR_CA_CERT=$(echo "$ca_cert_secret_value" | extract_cert_from_json_input)
+}
+
+function load_idp_certs() {
+    echo "Loading IDP certificates..."
+    IDP_CERTIFICATE=$(echo "$secret" | jq -r 'select(.idpCertificate != null) | .idpCertificate')
+    SIDECAR_IDP_PUBLIC_CERT=$(echo "$secret" | jq -r 'select(.sidecarPublicIdpCertificate != null) | .sidecarPublicIdpCertificate')
+    SIDECAR_IDP_PRIVATE_KEY=$(echo "$secret" | jq -r 'select(.sidecarPrivateIdpKey != null) | .sidecarPrivateIdpKey')
+}
+
+function fetch_hostname() {
+    echo "Fetching public hostname..."
+    INSTANCE_ID=$HOSTNAME
+    echo "Setting INSTANCE_ID to '$INSTANCE_ID'"
+}
+
+function update_nginx_resolver(){
+    export NGINX_RESOLVER=$(cat /etc/resolv.conf | grep nameserver | awk '{print $2}')
+    echo "Setting NGINX_RESOLVER to '$NGINX_RESOLVER'..."
+}
+
+function get_token () {
+    echo "Getting Control Plane Token using port $1..."
+    local url_token="https://${controlplane_host}:$1/v1/users/oidc/token"
+    local e_state=$(set +o | grep errexit) # Store the current errexit state
+    set +e
+    token=$(${curl} --no-progress-meter --fail-with-body --request POST "$url_token" -d grant_type=client_credentials -d client_id="$${SIDECAR_CLIENT_ID}" -d client_secret="$${SIDECAR_CLIENT_SECRET}" 2>&1)
+    token_error=$(echo $?)
+    eval "$e_state" # Restore the errexit state
+}
+
+function get_sidecar_version () {
+    echo "Getting sidecar version from Control Plane..."
+    get_token "443"
+    if [[ $token_error -ne 0 ]]; then
+        echo "Attempt on 443: $token"
+    fi
+    local access_token=$(echo "$token" | jq -r .access_token)
+    local resp=$(${curl} --no-progress-meter --fail-with-body --request GET "https://${controlplane_host}/v2/sidecars/${sidecar_id}" -H "Authorization: Bearer $access_token")
+    if [[ $? -ne 0 ]]; then
+        echo "Error retrieving sidecar version from Control Plane."
+        return 1
+    fi
+    SIDECAR_VERSION=$(echo "$resp" | jq -r '.sidecar.version // empty')
+}
+
+function registry_login () {
+    echo "Container Registry Login..."
+    if [[ ${container_registry} == *"azureecr"* ]] ; then
+        echo "(login): Logging in to Azure ECR..."
+        eval $(az acr login ${container_registry})
+    else
+        echo "(login): Won't log in automatically to any image registry. Image registry set to: ${container_registry}"
+    fi
+}
+
+# Checks if the specified Docker container is running without restarts within 5 seconds
+function containerCheck () {
+    CONTAINER_NAME="$1"
+    WAIT_TIME=0
+    EXPECTED_WAIT_TIME=5
+    until [ $WAIT_TIME -eq $EXPECTED_WAIT_TIME ] || [ "$(eval docker inspect "$CONTAINER_NAME" | jq -r -e '.[].RestartCount')" -ne 0 ]; do
+        printf "."
+        (( WAIT_TIME++ ))
+        sleep 1
+    done
+    echo ""
+    [ "$WAIT_TIME" -eq $EXPECTED_WAIT_TIME ]
+}
+
+function launch () {
+    echo "Starting sidecar..."
+    cd /home/${vm_username}
+    SIDECAR_IMAGE=${container_registry}/cyral-sidecar:$SIDECAR_VERSION
+    retry docker pull -q $SIDECAR_IMAGE
+    retry docker run -d --name sidecar --network=host --log-driver=local --log-opt max-size=500m --restart=unless-stopped --env-file .env $SIDECAR_IMAGE
+    if ! containerCheck "sidecar"; then
+        echo "--> Problem with sidecar! Inspect the logs to diagnose the issue. <--"
+    fi
+}
