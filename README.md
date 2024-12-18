@@ -81,12 +81,6 @@ module "cyral_sidecar" {
 
 ## Upgrade
 
-### Module upgrade
-
-If you are coming from `v4` of this module, read the
-[upgrade notes](https://github.com/cyralinc/terraform-azure-sidecar-vm/blob/main/docs/upgrade-notes.md) for specific
-instructions on how to upgrade this module.
-
 ### Sidecar upgrade
 
 This module supports [1-click upgrade](https://cyral.com/docs/sidecars/manage/upgrade#1-click-upgrade).

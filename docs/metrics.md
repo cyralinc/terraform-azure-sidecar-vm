@@ -10,10 +10,10 @@ metrics port. We recommend setting the CIDR to your metrics scraper's possible I
 
 ## Prometheus service discovery
 
-Service discovery for EC2 instances is documented under the [`azure_sd_config`](https://prometheus.io/docs/prometheus/latest/configuration/configuration/#azure_sd_config)
+Service discovery for VM instances is documented under the [`azure_sd_config`](https://prometheus.io/docs/prometheus/latest/configuration/configuration/#azure_sd_config)
 section of the `Prometheus` configuration docs. 
 
-A tag `MetricsPort` is added to the EC2 instances containing the metrics port `9000`.
+A tag `MetricsPort` is added to the VM instances containing the metrics port `9000`.
 It makes possible to have configurations similar to the following:
 
 ```yaml

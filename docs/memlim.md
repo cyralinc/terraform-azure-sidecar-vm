@@ -66,7 +66,7 @@ set the memory limit for the PostgreSQL wire service to 1GB, set the
 ```json
 {
   "pre": "",
-  "pre_sidecar_start": "cat <<EOF > /home/ec2-user/.env\nCYRAL_PG_WIRE_MAX_MEM=1024\nEOF",
+  "pre_sidecar_start": "cat <<EOF > /home/ubuntu/.env\nCYRAL_PG_WIRE_MAX_MEM=1024\nEOF",
   "post": ""
 }
 ```

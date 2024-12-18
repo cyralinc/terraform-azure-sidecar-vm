@@ -13,8 +13,7 @@ As an example, one could set the variable as follows to inject custom commands f
       systemctl disable nftables || echo 'cannot disable nftables'
       function package_install(){
         yum update -y
-        yum install -y podman podman-docker python3-pip jq
-        pip3 install awscli
+        yum install -y podman podman-docker
       }
       function docker_setup(){
         systemctl enable podman
